@@ -1,47 +1,46 @@
 # DemoSender 📲
 
-**WhatsApp Demo Sender Tool** — Apni startup sales team ke liye banaya gaya!
+**WhatsApp Demo Sender Tool** — Built for startup sales and marketing teams!
 
-## Kaise Use Karein?
+## How to Use?
 
-1. `index.html` file browser mein kholein (double click)
-2. Pehle **Settings** tab mein jaake apni company ka naam aur products ke demo links daalo
-3. **Send Demo** tab mein:
-   - Client ka naam likho
-   - WhatsApp number daalo
-   - Product select karo
-   - "WhatsApp Par Bhejo" button dabao
-4. **Dashboard** mein saare clients dekho aur follow-up track karo
-5. **History** mein pehle bheje gaye sabhi demos dekho
+1. Open `index.html` in any browser (just double-click it).
+2. First, go to the **Settings** tab and enter your company name along with your product demo links.
+3. In the **Send Demo** tab:
+   - Enter the client's name.
+   - Enter their WhatsApp number.
+   - Select the product.
+   - Click the **"Send via WhatsApp"** button.
+4. Go to the **Dashboard** to view all clients and track scheduled follow-ups.
+5. Check the **History** tab to see a complete log of all previously sent demos.
 
-## Files
+## Project Structure
 
-| File | Kaam |
-|------|------|
-| `index.html` | Main website |
-| `style.css` | Design / styling |
-| `app.js` | Logic / functionality |
-| `manifest.json` | PWA support |
+| File | Description |
+|------|-------------|
+| `index.html` | Main user interface |
+| `style.css` | Styling and responsive design |
+| `app.js` | Core application logic & local storage |
+| `manifest.json` | Progressive Web App (PWA) configuration |
 
-## Features
+## Key Features
 
-- ✅ WhatsApp pe direct demo link bhejo
-- ✅ 4 default products (customize kar sakte ho)
-- ✅ Client dashboard with avatars
-- ✅ Follow-up reminders (overdue alerts)
-- ✅ Complete send history
-- ✅ Data export/import (JSON backup)
-- ✅ Mobile-friendly design
-- ✅ Sab kuch browser mein store hota hai (localStorage)
+- ✅ Send instant demo links directly to WhatsApp with 1 click
+- ✅ 4 default products (easily customizable)
+- ✅ Comprehensive client dashboard with initials & status badges
+- ✅ Follow-up reminders with automatic overdue alerts
+- ✅ Complete send history log with product filtering
+- ✅ One-click JSON data export and import for easy backups
+- ✅ 100% mobile-friendly responsive layout
+- ✅ Zero backend required — securely saved locally in the browser (`localStorage`)
 
-## Demo Links Kahan Dalein?
+## Where to Add Your Demo Links?
 
-**Settings Tab → Product ke "Demo Link" field mein** apni actual website ka demo URL dalo.
+Go to **Settings Tab → Manage Products → "Demo Link"** field and paste your actual product or website demo URLs.
 
 Example: `https://yourcompany.com/demo/qr-connect`
 
-## Note
+## Notes
 
-- Koi server ya hosting ki zaroorat nahi — sirf HTML file browser mein kholein
-- Data browser mein save hota hai (clear cache karne se delete hoga — Export karke backup lo!)
-
+- No server setup or cloud hosting required — runs entirely offline or locally inside any browser.
+- All client and demo history data is stored locally in your browser. Use the **Export Data (JSON)** feature in Settings to create backups anytime!
