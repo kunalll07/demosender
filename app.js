@@ -53,18 +53,22 @@ var selectedProduct = null;
 var followupTargetId = null;
 
 // ===== INIT =====
-  document.addEventListener('DOMContentLoaded', function () {
-    loadData();
-    setupTabs();
-    renderProductGrid();
-    renderDashboard();
-    renderHistory();
-    renderSettings();
-    checkReminders();
-    updatePreview();
-    document.getElementById('clientName').addEventListener('input', updatePreview);
-    document.getElementById('customMsg').addEventListener('input', updatePreview);
-  });
+document.addEventListener('DOMContentLoaded', function () {
+  loadData();
+  setupTabs();
+  // Auto-select first product by default so user doesn't have to click
+  if (!selectedProduct && settings.products && settings.products.length > 0) {
+    selectedProduct = settings.products[0];
+  }
+  renderProductGrid();
+  renderDashboard();
+  renderHistory();
+  renderSettings();
+  checkReminders();
+  updatePreview();
+  document.getElementById('clientName').addEventListener('input', updatePreview);
+  document.getElementById('customMsg').addEventListener('input', updatePreview);
+});
 
   // ===== DATA PERSISTENCE =====
   function loadData() {
@@ -178,28 +182,59 @@ function buildMessage(clientName, product) {
 // ===== HELPER: RELIABLE WHATSAPP OPENER =====
 function openWhatsApp(fullNumber, message) {
   var encodedMsg = encodeURIComponent(message);
-  // Universal WhatsApp API endpoint works seamlessly across mobile app & desktop web
   var waUrl = 'https://api.whatsapp.com/send?phone=' + fullNumber + '&text=' + encodedMsg;
 
-  // Use a temporary anchor to prevent browser popup blockers from blocking window.open
-  var a = document.createElement('a');
-  a.href = waUrl;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  try {
+    var win = window.open(waUrl, '_blank');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      // Fallback: If popup blocker intercepts, redirect directly
+      window.location.href = waUrl;
+    }
+  } catch (e) {
+    window.location.href = waUrl;
+  }
 }
 
 // ===== SEND DEMO =====
 function sendDemo() {
   var name = document.getElementById('clientName').value.trim();
   var cc = document.getElementById('countryCode').value;
-  var num = document.getElementById('whatsappNumber').value.trim().replace(/\D/g, '');
+  var rawNum = document.getElementById('whatsappNumber').value.trim();
 
-  if (!name) { showToast('Please enter the client name!'); return; }
-  if (!num || num.length < 10) { showToast('Please enter a valid WhatsApp number!'); return; }
-  if (!selectedProduct) { showToast('Please select a product!'); return; }
+  // Strip everything except digits
+  var num = rawNum.replace(/\D/g, '');
+
+  if (!name) { 
+    showToast('⚠️ Please enter the client name!'); 
+    document.getElementById('clientName').focus();
+    return; 
+  }
+  
+  if (!num || num.length < 10) { 
+    showToast('⚠️ Please enter a 10-digit WhatsApp number!'); 
+    document.getElementById('whatsappNumber').focus();
+    return; 
+  }
+
+  // Smart sanitization: remove leading 0 if entered (e.g. 09876543210 -> 9876543210)
+  if (num.startsWith('0')) {
+    num = num.substring(1);
+  }
+
+  // If user already typed the country code (e.g. 919876543210) while +91 is selected
+  if (cc === '91' && num.length === 12 && num.startsWith('91')) {
+    num = num.substring(2);
+  }
+
+  // If no product is selected, auto-select the first product
+  if (!selectedProduct && settings.products && settings.products.length > 0) {
+    selectedProduct = settings.products[0];
+  }
+
+  if (!selectedProduct) { 
+    showToast('⚠️ Please select a product!'); 
+    return; 
+  }
 
   var fullNumber = cc + num;
   var message = buildMessage(name, selectedProduct);
@@ -207,18 +242,16 @@ function sendDemo() {
   var clientId = saveClient(name, num, cc, selectedProduct);
   saveHistory(clientId, name, fullNumber, selectedProduct);
 
-  showToast('Opening WhatsApp...');
-  // Open immediately on user click event
+  showToast('🚀 Opening WhatsApp...');
   openWhatsApp(fullNumber, message);
 
+  // Clear name & number, but keep the product selected for the next customer
   setTimeout(function () {
     document.getElementById('clientName').value = '';
     document.getElementById('whatsappNumber').value = '';
     document.getElementById('customMsg').value = '';
-    selectedProduct = null;
-    renderProductGrid();
     updatePreview();
-  }, 600);
+  }, 400);
 }
 
 function saveClient(name, number, cc, product) {
