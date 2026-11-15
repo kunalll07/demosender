@@ -175,35 +175,51 @@ function buildMessage(clientName, product) {
               return msg;
             }
 
+// ===== HELPER: RELIABLE WHATSAPP OPENER =====
+function openWhatsApp(fullNumber, message) {
+  var encodedMsg = encodeURIComponent(message);
+  // Universal WhatsApp API endpoint works seamlessly across mobile app & desktop web
+  var waUrl = 'https://api.whatsapp.com/send?phone=' + fullNumber + '&text=' + encodedMsg;
+
+  // Use a temporary anchor to prevent browser popup blockers from blocking window.open
+  var a = document.createElement('a');
+  a.href = waUrl;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 // ===== SEND DEMO =====
 function sendDemo() {
-              var name = document.getElementById('clientName').value.trim();
-              var cc = document.getElementById('countryCode').value;
-              var num = document.getElementById('whatsappNumber').value.trim().replace(/\D/g, '');
+  var name = document.getElementById('clientName').value.trim();
+  var cc = document.getElementById('countryCode').value;
+  var num = document.getElementById('whatsappNumber').value.trim().replace(/\D/g, '');
 
-              if (!name) { showToast('Please enter the client name!'); return; }
-              if (!num || num.length < 10) { showToast('Please enter a valid WhatsApp number!'); return; }
-              if (!selectedProduct) { showToast('Please select a product!'); return; }
+  if (!name) { showToast('Please enter the client name!'); return; }
+  if (!num || num.length < 10) { showToast('Please enter a valid WhatsApp number!'); return; }
+  if (!selectedProduct) { showToast('Please select a product!'); return; }
 
-              var fullNumber = cc + num;
-              var message = buildMessage(name, selectedProduct);
-              var waUrl = 'https://wa.me/' + fullNumber + '?text=' + encodeURIComponent(message);
+  var fullNumber = cc + num;
+  var message = buildMessage(name, selectedProduct);
 
-              var clientId = saveClient(name, num, cc, selectedProduct);
-              saveHistory(clientId, name, fullNumber, selectedProduct);
+  var clientId = saveClient(name, num, cc, selectedProduct);
+  saveHistory(clientId, name, fullNumber, selectedProduct);
 
-              showToast('Opening WhatsApp...');
-              setTimeout(function () { window.open(waUrl, '_blank'); }, 300);
+  showToast('Opening WhatsApp...');
+  // Open immediately on user click event
+  openWhatsApp(fullNumber, message);
 
-                setTimeout(function () {
-                  document.getElementById('clientName').value = '';
-                  document.getElementById('whatsappNumber').value = '';
-                  document.getElementById('customMsg').value = '';
-                  selectedProduct = null;
-                  renderProductGrid();
-                  updatePreview();
-                }, 600);
-              }
+  setTimeout(function () {
+    document.getElementById('clientName').value = '';
+    document.getElementById('whatsappNumber').value = '';
+    document.getElementById('customMsg').value = '';
+    selectedProduct = null;
+    renderProductGrid();
+    updatePreview();
+  }, 600);
+}
 
 function saveClient(name, number, cc, product) {
                   var existing = null;
@@ -565,36 +581,34 @@ function closeModal() {
                               });
                             });
 
-                            // ===== RESEND =====
-                            function resendDemo(clientId) {
-                              var c = clients.find(function (cl) { return cl.id === clientId; });
-                              if (!c) return;
-                              var product = settings.products.find(function (p) { return p.id === c.product; });
-                              if (!product) { showToast('Product not found!'); return; }
+// ===== RESEND =====
+function resendDemo(clientId) {
+  var c = clients.find(function (cl) { return cl.id === clientId; });
+  if (!c) return;
+  var product = settings.products.find(function (p) { return p.id === c.product; });
+  if (!product) { showToast('Product not found!'); return; }
 
-                              var message = buildMessage(c.name, product);
-                              var fullNumber = c.cc + c.number;
-                              var waUrl = 'https://wa.me/' + fullNumber + '?text=' + encodeURIComponent(message);
+  var message = buildMessage(c.name, product);
+  var fullNumber = c.cc + c.number;
 
-                              saveHistory(clientId, c.name, fullNumber, product);
-                              c.sentAt = new Date().toISOString();
-                              saveData();
+  saveHistory(clientId, c.name, fullNumber, product);
+  c.sentAt = new Date().toISOString();
+  saveData();
 
-                              showToast('Opening WhatsApp...');
-                              setTimeout(function () { window.open(waUrl, '_blank'); }, 300);
-                            }
+  showToast('Opening WhatsApp...');
+  openWhatsApp(fullNumber, message);
+}
 
-                            function resendDemoByHistory(historyId) {
-                              var h = history.find(function (item) { return item.id === historyId; });
-                              if (!h) return;
-                              var product = settings.products.find(function (p) { return p.id === h.product; });
-                              if (!product) { showToast('Product not found!'); return; }
+function resendDemoByHistory(historyId) {
+  var h = history.find(function (item) { return item.id === historyId; });
+  if (!h) return;
+  var product = settings.products.find(function (p) { return p.id === h.product; });
+  if (!product) { showToast('Product not found!'); return; }
 
-                              var message = buildMessage(h.clientName, product);
-                              var waUrl = 'https://wa.me/' + h.number + '?text=' + encodeURIComponent(message);
-                              showToast('Opening WhatsApp...');
-                              setTimeout(function () { window.open(waUrl, '_blank'); }, 300);
-                            }
+  var message = buildMessage(h.clientName, product);
+  showToast('Opening WhatsApp...');
+  openWhatsApp(h.number, message);
+}
 
                             // ===== DELETE =====
                             function deleteClient(clientId) {
