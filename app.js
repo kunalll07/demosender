@@ -283,6 +283,15 @@ function handleSendClick(event) {
   saveClient(name, num, cc, selectedProduct);
   showToast('🚀 Opening WhatsApp...');
 
+  try {
+    var win = window.open(waUrl, '_blank');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = waUrl;
+    }
+  } catch (e) {
+    window.location.href = waUrl;
+  }
+
   setTimeout(function () {
     if (nameEl) nameEl.value = '';
     if (numEl) numEl.value = '';
@@ -290,13 +299,15 @@ function handleSendClick(event) {
     if (cm) cm.value = '';
   }, 400);
 
-  return true;
+  if (event) event.preventDefault();
+  return false;
 }
 
 function saveClient(name, number, cc, product) {
+  loadData();
   var existing = null;
   for (var i = 0; i < clients.length; i++) {
-    if (clients[i].number === number && clients[i].cc === cc) {
+    if (clients[i].number === number && clients[i].cc === cc && (clients[i].name || '').toLowerCase() === name.toLowerCase()) {
       existing = clients[i];
       break;
     }
@@ -304,14 +315,14 @@ function saveClient(name, number, cc, product) {
 
   var now = new Date().toISOString();
   if (existing) {
-    existing.name = name;
     existing.product = product.id;
     existing.sentAt = now;
     saveData();
+    renderDashboard();
     return existing.id;
   }
 
-  var id = 'c_' + Date.now();
+  var id = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
   clients.push({
     id: id,
     name: name,
@@ -323,6 +334,7 @@ function saveClient(name, number, cc, product) {
     followupDone: false
   });
   saveData();
+  renderDashboard();
   return id;
 }
 
@@ -536,7 +548,7 @@ function buildClientCard(c) {
   trashBtn.onclick = function (e) {
     e.preventDefault();
     e.stopPropagation();
-    confirmAndDeleteClient(c.id, c.number, c.name);
+    confirmAndDeleteClient(c.id, c.name);
   };
   actionsWrap.appendChild(trashBtn);
 
@@ -589,23 +601,21 @@ function buildClientCard(c) {
   return card;
 }
 
-function confirmAndDeleteClient(clientId, clientNumber, clientName) {
+function confirmAndDeleteClient(clientId, clientName) {
   var conf = prompt("⚠️ Type 'clear' to confirm deleting " + (clientName || "this client") + ":");
   if (!conf || conf.trim().toLowerCase() !== 'clear') {
     showToast("❌ Cancelled! You must type 'clear' to delete.");
     return;
   }
-  deleteClient(clientId, clientNumber);
+  deleteClient(clientId);
 }
 window.confirmAndDeleteClient = confirmAndDeleteClient;
 
-function deleteClient(clientId, clientNumber) {
+function deleteClient(clientId) {
   loadData();
   clients = clients.filter(function (c) {
     if (!c) return false;
-    if (clientId && (c.id === clientId || String(c.id) === String(clientId))) return false;
-    if (clientNumber && (c.number === clientNumber || String(c.number) === String(clientNumber))) return false;
-    return true;
+    return c.id !== clientId && String(c.id) !== String(clientId);
   });
   saveData();
   renderDashboard();
