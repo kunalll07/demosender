@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
   renderDashboard();
   renderSettings();
   updateCountryFlag();
+  initFirebaseSync();
 
   // Instant real-time search event listeners
   var searchInput = document.getElementById('dashSearch');
@@ -318,12 +319,17 @@ function saveClient(name, number, cc, product) {
     existing.product = product.id;
     existing.sentAt = now;
     saveData();
+    if (isFirebaseReady && db) {
+      db.collection('clients').doc(existing.id).set(existing).catch(function(e) {
+        console.warn('Firebase client update notice:', e);
+      });
+    }
     renderDashboard();
     return existing.id;
   }
 
   var id = 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-  clients.push({
+  var newClient = {
     id: id,
     name: name,
     number: number,
@@ -332,8 +338,14 @@ function saveClient(name, number, cc, product) {
     sentAt: now,
     followup: null,
     followupDone: false
-  });
+  };
+  clients.push(newClient);
   saveData();
+  if (isFirebaseReady && db) {
+    db.collection('clients').doc(id).set(newClient).catch(function(e) {
+      console.warn('Firebase client save notice:', e);
+    });
+  }
   renderDashboard();
   return id;
 }
@@ -618,6 +630,11 @@ function deleteClient(clientId) {
     return c.id !== clientId && String(c.id) !== String(clientId);
   });
   saveData();
+  if (isFirebaseReady && db) {
+    db.collection('clients').doc(clientId).delete().catch(function (e) {
+      console.warn('Firebase client delete notice:', e);
+    });
+  }
   renderDashboard();
   showToast('🗑️ Client deleted');
 }
@@ -633,8 +650,14 @@ function clearAllClients() {
     showToast('❌ Cancelled! You must type "clear" to delete.');
     return;
   }
+  var toDelete = clients.slice();
   clients = [];
   saveData();
+  if (isFirebaseReady && db) {
+    toDelete.forEach(function (c) {
+      db.collection('clients').doc(c.id).delete().catch(function () {});
+    });
+  }
   renderDashboard();
   showToast('🗑️ All clients cleared!');
 }
@@ -769,6 +792,11 @@ function saveSettings() {
   settings.introMsg = im ? im.value.trim() : '';
 
   saveData();
+  if (isFirebaseReady && db) {
+    db.collection('settings').doc('config').set(settings).catch(function (e) {
+      console.warn('Firebase settings save notice:', e);
+    });
+  }
   renderProductGrid();
   if (selectedProduct) {
     selectedProduct = settings.products.find(function (p) { return p.id === selectedProduct.id; }) || settings.products[0];
@@ -886,6 +914,13 @@ function sendReminder(clientId) {
   // Record remind timestamp
   client.remindedAt = new Date().toISOString();
   saveData();
+  if (isFirebaseReady && db) {
+    db.collection('clients').doc(client.id).update({
+      remindedAt: client.remindedAt
+    }).catch(function () {
+      db.collection('clients').doc(client.id).set(client).catch(function () {});
+    });
+  }
   renderDashboard();
 
   showToast('🚀 Opening WhatsApp Reminder...');
@@ -910,3 +945,77 @@ function updateCountryFlag() {
   wrap.innerHTML = FLAGS_SVG[val] || FLAGS_SVG['91'];
 }
 window.updateCountryFlag = updateCountryFlag;
+
+
+// ===================================================
+//  Firebase Real-Time Firestore Synchronization
+// ===================================================
+
+function updateCloudStatusBadge(isActive) {
+  var b = document.getElementById('drawerCloudBadge');
+  var t = document.getElementById('drawerCloudText');
+  if (b) {
+    b.classList.toggle('offline', !isActive);
+  }
+  if (t) {
+    t.textContent = isActive ? 'Firebase Cloud Active' : 'Offline Mode (Local Cache)';
+  }
+}
+
+function initFirebaseSync() {
+  if (typeof isFirebaseReady === 'undefined' || !isFirebaseReady || !db) {
+    updateCloudStatusBadge(false);
+    return;
+  }
+
+  // 1. Real-time Firestore sync for clients collection
+  try {
+    db.collection('clients').onSnapshot(function (snapshot) {
+      var cloudClients = [];
+      snapshot.forEach(function (doc) {
+        var data = doc.data();
+        if (data && data.id) {
+          cloudClients.push(data);
+        }
+      });
+
+      // If cloud has documents, update local state
+      if (cloudClients.length > 0) {
+        clients = cloudClients;
+        localStorage.setItem('ds_clients', JSON.stringify(clients));
+        renderDashboard();
+      } else if (clients.length > 0 && !snapshot.metadata.fromCache) {
+        // Initial migration: upload existing local clients to Firestore!
+        clients.forEach(function (c) {
+          db.collection('clients').doc(c.id).set(c).catch(function () {});
+        });
+      }
+      updateCloudStatusBadge(true);
+    }, function (error) {
+      console.warn('Firestore clients listener error (check if Database is created):', error.message);
+      updateCloudStatusBadge(false);
+    });
+
+    // 2. Real-time Firestore sync for settings
+    db.collection('settings').doc('config').onSnapshot(function (doc) {
+      if (doc.exists) {
+        var cloudSettings = doc.data();
+        if (cloudSettings && cloudSettings.products && cloudSettings.products.length > 0) {
+          settings = cloudSettings;
+          localStorage.setItem('ds_settings', JSON.stringify(settings));
+          renderProductGrid();
+          renderSettings();
+        }
+      } else if (!doc.metadata.fromCache) {
+        // Initial migration: upload settings to Firestore!
+        db.collection('settings').doc('config').set(settings).catch(function () {});
+      }
+    }, function (error) {
+      console.warn('Firestore settings listener notice:', error.message);
+    });
+  } catch (err) {
+    console.warn('initFirebaseSync error:', err);
+    updateCloudStatusBadge(false);
+  }
+}
+window.initFirebaseSync = initFirebaseSync;

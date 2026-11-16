@@ -399,6 +399,12 @@
         <div>
           <div class="brand-title-sm">DemoSender</div>
           <div class="brand-sub-sm">Share. Connect. Grow.</div>
+          <div style="margin-top: 6px;">
+            <div id="drawerCloudBadge" class="cloud-status-badge">
+              <span class="cloud-dot"></span>
+              <span id="drawerCloudText">Firebase Cloud Synced</span>
+            </div>
+          </div>
         </div>
       </div>
     </aside>
@@ -407,7 +413,11 @@
 
   </div><!-- /.app-container -->
 
-  <script src="app.js?v=20261117_fix14"></script>
+    <!-- Firebase Cloud Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js?v=20261117_fb"></script>
+  <script src="app.js?v=20261117_fb"></script>
 </body>
 
 </html>
