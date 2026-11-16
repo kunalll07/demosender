@@ -3,214 +3,411 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DemoSender — WhatsApp Demo Tool</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261117_logo_v2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>DemoSender</title>
+  <link rel="stylesheet" href="style.css?v=20261117_fix4" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#25D366" />
+  <meta name="theme-color" content="#000000" />
 </head>
 
 <body>
 
-  <!-- ===== HEADER ===== -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="logo">
-        <span class="logo-icon">📲</span>
-        <span class="logo-text">DemoSender</span>
+  <div class="app-container">
+
+    <!-- ===== HEADER (BLACK BAR — CLEAN SQUARE) ===== -->
+    <header class="app-header">
+      <div class="header-left" onclick="switchTab('send')" style="cursor:pointer;" title="DemoSender Home">
+        <img src="logo_horizontal.png?v=20261117_logo_v2" alt="DemoSender" class="header-brand-logo" />
       </div>
-      <nav class="tab-nav">
-        <button class="tab-btn active" data-tab="send">Send Demo</button>
-        <button class="tab-btn" data-tab="dashboard">Dashboard</button>
-        <button class="tab-btn" data-tab="history">History</button>
-        <button class="tab-btn" data-tab="settings">Settings</button>
-      </nav>
-    </div>
-  </header>
 
-  <!-- ===== MAIN CONTENT ===== -->
-  <main class="app-main">
+      <div class="header-right">
+        <!-- Hamburger Menu Button -->
+        <button type="button" class="header-btn" id="btnHamburger" onclick="openDrawer()" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="4" y1="7" x2="20" y2="7"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="17" x2="20" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
 
-    <!-- ========== TAB: SEND DEMO ========== -->
-    <section class="tab-content active" id="tab-send">
-      <div class="card send-card">
-        <h2 class="section-title">🚀 Send Demo</h2>
-        <p class="section-sub">Send a product demo to your customer via WhatsApp</p>
+    <!-- ===== MAIN SCROLLABLE APP BODY ===== -->
+    <main class="app-main">
 
-        <div class="form-group">
-          <label for="clientName">👤 Client Name</label>
-          <input type="text" id="clientName" placeholder="e.g. Raj Sharma" autocomplete="off" />
-        </div>
-
-        <div class="form-group">
-          <label for="whatsappNumber">📱 WhatsApp Number</label>
-          <div class="phone-input-wrap">
-            <select id="countryCode">
-              <option value="91">🇮🇳 +91</option>
-              <option value="1">🇺🇸 +1</option>
-              <option value="44">🇬🇧 +44</option>
-              <option value="971">🇦🇪 +971</option>
-              <option value="61">🇦🇺 +61</option>
-            </select>
-            <input type="tel" id="whatsappNumber" placeholder="9876543210" maxlength="15" />
+      <!-- SCREEN 1: SEND DEMO -->
+      <section id="tab-send" class="tab-pane active">
+        <div class="content-card">
+          <div class="pane-header">
+            <div class="pane-icon-box">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h1 class="pane-title">Send Demo</h1>
+              <p class="pane-subtitle">Share demo with your client</p>
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label>📦 Select Product</label>
-          <div class="product-grid" id="productGrid">
-            <!-- Products injected by JS -->
+          <!-- Client Name -->
+          <div class="form-row">
+            <label class="form-label" for="clientName">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z">
+                </path>
+              </svg>
+              <span>Client Name</span>
+            </label>
+            <input type="text" id="clientName" class="form-input" placeholder="e.g. Raj Sharma" autocomplete="off" />
           </div>
-        </div>
 
-        <div class="form-group" id="customMsgGroup">
-          <label for="customMsg">💬 Extra Message (Optional)</label>
-          <textarea id="customMsg" placeholder="Add a personal note for the client..." rows="3"></textarea>
-        </div>
+          <!-- WhatsApp Number -->
+          <div class="form-row">
+            <label class="form-label" for="whatsappNumber">
+              <svg class="field-icon wa-green-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z">
+                </path>
+              </svg>
+              <span>WhatsApp Number</span>
+            </label>
+            <div class="phone-combo">
+              <div class="country-wrap">
+                <span id="countryFlagWrap" class="country-flag-icon"><svg viewBox="0 0 36 24" class="flag-svg"><rect width="36" height="24" rx="2" fill="#fff"/><rect width="36" height="8" fill="#FF9933"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3.2" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.8" fill="#000080"/></svg></span>
+                <select id="countryCode" onchange="updateCountryFlag()">
+                  <option value="91">+91</option>
+                  <option value="1">+1</option>
+                  <option value="44">+44</option>
+                  <option value="971">+971</option>
+                  <option value="61">+61</option>
+                </select>
+                <svg class="select-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <div class="phone-divider"></div>
+              <div class="phone-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l1.86-1.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z">
+                  </path>
+                </svg>
+              </div>
+              <input type="tel" id="whatsappNumber" class="phone-input" placeholder="9876543210" maxlength="15" />
+            </div>
+          </div>
 
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
-          <button class="btn btn-whatsapp" id="sendBtn" onclick="sendDemo('app')">
-            <svg viewBox="0 0 24 24" fill="currentColor" class="wa-icon">
+          <!-- Select Product (2x2 Grid) -->
+          <div class="form-row">
+            <label class="form-label">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                </path>
+              </svg>
+              <span>Select Product</span>
+            </label>
+            <div id="productGrid" class="product-grid-2x2"></div>
+          </div>
+
+          <!-- Collapsible Extra Message -->
+          <div class="collapsible-box">
+            <button type="button" class="collapsible-toggle" onclick="toggleExtra()">
+              <div class="collapsible-label">
+                <svg id="extraCaret" class="caret-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                <span>Extra Message (Optional)</span>
+              </div>
+            </button>
+            <div id="extraBody" class="collapsible-content" style="display:none;">
+              <div class="note-input-row">
+                <svg class="chat-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <textarea id="customMsg" class="note-ta" placeholder="Add a personal note for the client..."
+                  rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big Green WhatsApp Send Button -->
+          <a id="sendBtn" href="#" target="_blank" onclick="return handleSendClick(event)" class="wa-btn-main">
+            <svg class="wa-icon-svg" viewBox="0 0 24 24" fill="currentColor">
               <path
-                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z">
+              </path>
             </svg>
-            Send via WhatsApp (Mobile / App)
-          </button>
-
-          <button class="btn btn-outline" id="sendWebBtn" style="border-color:var(--wa-green); color:var(--wa-dark); font-weight:700;" onclick="sendDemo('web')">
-            💻 Send via WhatsApp Web (PC Browser)
-          </button>
-        </div>
-
-        <!-- Direct Clickable Fallback Link -->
-        <div id="directLinkWrap" style="display:none; margin-top:14px; text-align:center;">
-          <a id="directLinkA" href="#" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:10px 16px; background:#e8f5e9; border:1px solid var(--wa-green); border-radius:8px; color:var(--wa-dark); font-weight:700; text-decoration:none; font-size:14px;">
-            🔗 Direct WhatsApp Link (Click to Open)
+            <span>Send via WhatsApp</span>
+            <svg class="arrow-right-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
         </div>
+      </section>
 
-        <div class="send-preview" id="sendPreview" style="display:none;">
-          <h4>📋 Message Preview</h4>
-          <pre id="previewText"></pre>
+      <!-- SCREEN 2: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-pane">
+        <div class="content-card">
+          <div class="pane-header">
+            <div class="pane-icon-box">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"></path>
+              </svg>
+            </div>
+            <div>
+              <h1 class="pane-title">Dashboard</h1>
+              <p class="pane-subtitle">Overview of all your clients</p>
+            </div>
+          </div>
+
+          <!-- 3 Stat Cards in a row -->
+          <div class="stats-row-3">
+            <div class="stat-box">
+              <div class="stat-icon-wrap icon-total">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z">
+                  </path>
+                </svg>
+              </div>
+              <div id="statTotal" class="stat-num">0</div>
+              <div class="stat-label">Total Clients</div>
+            </div>
+
+            <div class="stat-box">
+              <div class="stat-icon-wrap icon-followup">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </div>
+              <div id="statFollowups" class="stat-num">0</div>
+              <div class="stat-label">Follow-ups</div>
+            </div>
+
+            <div class="stat-box box-overdue">
+              <div class="stat-icon-wrap icon-overdue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="9.5"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div id="statOverdue" class="stat-num">0</div>
+              <div class="stat-label">Overdue</div>
+            </div>
+          </div>
+
+          <!-- Filter & Search Row -->
+          <div class="dash-filter-row">
+            <div class="filter-dropdown-wrap">
+              <select id="dashFilter" onchange="renderDashboard()">
+                <option value="all">All Clients</option>
+                <option value="pending">Follow-up Pending</option>
+                <option value="done">Follow-up Done</option>
+              </select>
+              <svg class="select-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <div class="filter-search-wrap">
+              <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="11" cy="11" r="7.5"></circle>
+                <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+              </svg>
+              <input id="dashSearch" type="search" placeholder="Search clients..." autocomplete="off" spellcheck="false" oninput="handleSearchInput()" />
+              <button id="dashSearchClear" type="button" class="search-clear-btn" style="display:none;" onclick="resetSearch()" title="Clear search">✕</button>
+            </div>
+          </div>
+
+          <div id="clearBar" class="clear-bar" style="display:none;">
+            <button type="button" class="btn-clear-modern" onclick="clearAllClients()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              <span>Clear All</span>
+            </button>
+          </div>
+
+          <div id="searchActiveBar" style="display:none;"></div>
+          <div id="clientList" class="client-list"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: SETTINGS -->
+      <section id="tab-settings" class="tab-pane">
+        <div class="content-card">
+          <div class="pane-header">
+            <div class="pane-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
+            </div>
+            <div>
+              <h1 class="pane-title">Settings</h1>
+              <p class="pane-subtitle">Customize your products and messages</p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="companyName">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z">
+                </path>
+              </svg>
+              <span>Company Name</span>
+            </label>
+            <input type="text" id="companyName" class="form-input" placeholder="DemoSender" />
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="introMsg">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 10H6v-2h12v2zm0-3H6V7h12v2z">
+                </path>
+              </svg>
+              <span>Default Intro Message</span>
+            </label>
+            <textarea id="introMsg" class="form-textarea" rows="4"
+              placeholder="Hello! We are from {company}. We are sharing an exclusive demo just for you!"></textarea>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                </path>
+              </svg>
+              <span>Manage Products</span>
+            </label>
+
+            <div id="productSettingsList" class="prod-mgmt-list"></div>
+
+            <button type="button" class="btn-add-link" onclick="addProduct()">
+              <span>+ Add Product</span>
+            </button>
+          </div>
+
+          <button type="button" class="btn-save-black" onclick="saveSettings()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== BOTTOM NAVIGATION BAR ===== -->
+    <nav class="app-bottom-nav">
+      <button type="button" class="bnav-btn active" data-tab="send" onclick="switchTab('send')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <span class="bnav-text">Send Demo</span>
+        <span class="bnav-active-bar"></span>
+      </button>
+
+      <button type="button" class="bnav-btn" data-tab="dashboard" onclick="switchTab('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span class="bnav-text">Dashboard</span>
+        <span class="bnav-active-bar"></span>
+      </button>
+
+      <button type="button" class="bnav-btn" data-tab="settings" onclick="switchTab('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+          </path>
+        </svg>
+        <span class="bnav-text">Settings</span>
+        <span class="bnav-active-bar"></span>
+      </button>
+    </nav>
+
+    <!-- ===== DRAWER OVERLAY ===== -->
+    <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+
+    <aside id="drawerSidebar" class="drawer-sidebar">
+      <div class="drawer-header">
+        <div class="drawer-logo-wrap" onclick="switchTab('send'); closeDrawer();" style="cursor:pointer;">
+          <img src="logo_horizontal.png?v=20261117_logo_v2" alt="DemoSender" class="drawer-brand-logo" />
+        </div>
+        <button type="button" class="drawer-close-btn" onclick="closeDrawer()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="drawer-links">
+        <button type="button" class="drawer-link active" data-tab="send" onclick="switchTab('send'); closeDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          <span>Send Demo</span>
+        </button>
+
+        <button type="button" class="drawer-link" data-tab="dashboard" onclick="switchTab('dashboard'); closeDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button type="button" class="drawer-link" data-tab="settings" onclick="switchTab('settings'); closeDrawer();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+
+      <div class="drawer-footer-card">
+        <div class="drawer-info-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z">
+            </path>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title-sm">DemoSender</div>
+          <div class="brand-sub-sm">Share. Connect. Grow.</div>
         </div>
       </div>
-    </section>
+    </aside>
 
-    <!-- ========== TAB: DASHBOARD ========== -->
-    <section class="tab-content" id="tab-dashboard">
-      <div class="card">
-        <h2 class="section-title">📊 Dashboard</h2>
-        <p class="section-sub">Overview of all your clients</p>
+    <div id="toast" class="toast-pill"></div>
 
-        <div class="stats-row" id="statsRow">
-          <!-- Stats injected by JS -->
-        </div>
+  </div><!-- /.app-container -->
 
-        <div class="filter-bar">
-          <select id="dashFilter" onchange="renderDashboard()">
-            <option value="all">All Clients</option>
-            <option value="pending">Follow-up Pending</option>
-            <option value="done">Follow-up Done</option>
-          </select>
-          <input type="search" id="dashSearch" placeholder="🔍 Search by name or number..."
-            oninput="renderDashboard()" />
-        </div>
-
-        <div id="clientList" class="client-list">
-          <!-- Client cards injected by JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== TAB: HISTORY ========== -->
-    <section class="tab-content" id="tab-history">
-      <div class="card">
-        <h2 class="section-title">📜 Send History</h2>
-        <p class="section-sub">All previously sent demos</p>
-
-        <div class="filter-bar">
-          <select id="historyProduct" onchange="renderHistory()">
-            <option value="all">All Products</option>
-          </select>
-          <input type="search" id="historySearch" placeholder="🔍 Search..." oninput="renderHistory()" />
-        </div>
-
-        <div id="historyList" class="history-list">
-          <!-- History injected by JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ========== TAB: SETTINGS ========== -->
-    <section class="tab-content" id="tab-settings">
-      <div class="card">
-        <h2 class="section-title">⚙️ Settings</h2>
-        <p class="section-sub">Customize your products and messages</p>
-
-        <div class="form-group">
-          <label>🏢 Company Name</label>
-          <input type="text" id="companyName" placeholder="e.g. TechStartup India" />
-        </div>
-
-        <div class="form-group">
-          <label>📝 Default Intro Message</label>
-          <textarea id="introMsg" rows="3" placeholder="Hello! We are from {company}..."></textarea>
-        </div>
-
-        <hr class="divider" />
-        <h3 class="sub-heading">📦 Manage Products</h3>
-
-        <div id="productSettings" class="product-settings-list">
-          <!-- Products injected by JS -->
-        </div>
-
-        <button class="btn btn-outline" onclick="addProduct()">➕ Add New Product</button>
-
-        <hr class="divider" />
-        <div class="danger-zone">
-          <h3 class="sub-heading" style="color:#e74c3c;">⚠️ Danger Zone</h3>
-          <button class="btn btn-danger" onclick="clearAllData()">🗑️ Delete All Data</button>
-          <button class="btn btn-outline" onclick="exportData()">📤 Export Data (JSON)</button>
-          <button class="btn btn-outline" onclick="importDataClick()">📥 Import Data (JSON)</button>
-          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
-        </div>
-
-        <button class="btn btn-primary save-btn" onclick="saveSettings()">💾 Save Settings</button>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ===== FOLLOW-UP MODAL ===== -->
-  <div class="modal-overlay" id="followupModal" style="display:none;">
-    <div class="modal-box">
-      <h3>📅 Set Follow-up Reminder</h3>
-      <p id="followupClientName"></p>
-      <div class="form-group">
-        <label>Follow-up Date</label>
-        <input type="date" id="followupDate" />
-      </div>
-      <div class="form-group">
-        <label>Note (Optional)</label>
-        <input type="text" id="followupNote" placeholder="e.g. Discuss pricing" />
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" onclick="saveFollowup()">✅ Save</button>
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== TOAST NOTIFICATION ===== -->
-  <div class="toast" id="toast"></div>
-
-  <!-- ===== REMINDER BANNER ===== -->
-  <div class="reminder-banner" id="reminderBanner" style="display:none;">
-    <span id="reminderText"></span>
-    <button onclick="dismissReminder()">✕</button>
-  </div>
-
-  <script src="app.js"></script>
+  <script src="app.js?v=20261117_fix13"></script>
 </body>
 
 </html>

@@ -1,287 +1,296 @@
 // ===================================================
-//  DemoSender -- Main Application Logic
-//  WhatsApp Demo Sending Tool
+//  DemoSender — Main Application Logic
+//  Matches Reference Design 100%
 // ===================================================
 
-// ===== DEFAULT DATA =====
-const DEFAULT_PRODUCTS = [
+var DEFAULT_PRODUCTS = [
   {
     id: 'qr-connect',
-    emoji: '\uD83D\uDCF2',
     name: 'QR Connect',
     tagline: 'Scan & Connect',
+    type: 'qr',
+    emoji: '📲',
     demoLink: 'https://yoursite.com/demo/qr-connect',
-    message: 'Hello {clientName}! \uD83D\uDC4B\n\nThank you for your interest. Here is the demo for *QR Connect* - connect your business digitally with just one QR code scan!\n\n\uD83D\uDD17 Demo Link: {demoLink}\n\nFeel free to reach out if you have any questions. We would love to help! \uD83D\uDE0A\n\n- {company}'
+    message: 'Hello {clientName}! 👋\n\nThank you for your interest. Here is the demo for *QR Connect* - connect your business digitally with just one QR code scan!\n\n🔗 Demo Link: {demoLink}\n\nFeel free to reach out if you have any questions. We would love to help! 😊\n\n- {company}'
   },
   {
     id: 'digital-menu',
-    emoji: '\uD83C\uDF7D\uFE0F',
     name: 'Digital Menu',
     tagline: 'For restaurants',
+    type: 'menu',
+    emoji: '🍽️',
     demoLink: 'https://yoursite.com/demo/digital-menu',
-    message: 'Hello {clientName}! \uD83D\uDC4B\n\nThank you for your interest. Here is the demo for *Digital Menu* - no more paper menus, go fully digital!\n\n\uD83D\uDD17 Demo Link: {demoLink}\n\nPerfect solution for your restaurant. Let us know if you have any questions! \uD83D\uDE0A\n\n- {company}'
+    message: 'Hello {clientName}! 👋\n\nThank you for your interest. Here is the demo for *Digital Menu* - no more paper menus, go fully digital!\n\n🔗 Demo Link: {demoLink}\n\nPerfect solution for your restaurant. Let us know if you have any questions! 😊\n\n- {company}'
   },
   {
     id: 'business-website',
-    emoji: '\uD83C\uDF10',
     name: 'Business Website',
     tagline: 'Online presence',
+    type: 'web',
+    emoji: '🌐',
     demoLink: 'https://yoursite.com/demo/business-website',
-    message: 'Hello {clientName}! \uD83D\uDC4B\n\nThank you for your interest. Here is the demo for *Business Website* - take your business online and reach more customers!\n\n\uD83D\uDD17 Demo Link: {demoLink}\n\nThe perfect online solution for your business. Feel free to reach out! \uD83D\uDE0A\n\n- {company}'
+    message: 'Hello {clientName}! 👋\n\nThank you for your interest. Here is the demo for *Business Website* - take your business online and reach more customers!\n\n🔗 Demo Link: {demoLink}\n\nThe perfect online solution for your business. Feel free to reach out! 😊\n\n- {company}'
   },
   {
     id: 'social-kit',
-    emoji: '\uD83D\uDCF1',
     name: 'Social Kit',
     tagline: 'Social media tools',
+    type: 'social',
+    emoji: '📱',
     demoLink: 'https://yoursite.com/demo/social-kit',
-    message: 'Hello {clientName}! \uD83D\uDC4B\n\nThank you for your interest. Here is the demo for *Social Kit* - manage all your social media marketing from one place!\n\n\uD83D\uDD17 Demo Link: {demoLink}\n\nBoost your business online presence today! \uD83D\uDE0A\n\n- {company}'
+    message: 'Hello {clientName}! 👋\n\nThank you for your interest. Here is the demo for *Social Kit* - manage all your social media marketing from one place!\n\n🔗 Demo Link: {demoLink}\n\nBoost your business online presence today! 😊\n\n- {company}'
   }
 ];
 
-const DEFAULT_SETTINGS = {
+var DEFAULT_SETTINGS = {
   companyName: 'DemoSender',
-  introMsg: 'Hello! We are from {company}. We are sharing an exclusive demo just for you:',
+  introMsg: 'Hello! We are from {company}. We are sharing an exclusive demo just for you!',
   products: DEFAULT_PRODUCTS
 };
 
-// ===== STATE =====
 var settings = {};
 var clients = [];
-var history = [];
 var selectedProduct = null;
-var followupTargetId = null;
 
-// ===== INIT =====
 document.addEventListener('DOMContentLoaded', function () {
   loadData();
-  setupTabs();
-  // Auto-select first product by default so user doesn't have to click
   if (!selectedProduct && settings.products && settings.products.length > 0) {
     selectedProduct = settings.products[0];
   }
   renderProductGrid();
   renderDashboard();
-  renderHistory();
   renderSettings();
-  checkReminders();
-  updatePreview();
-  document.getElementById('clientName').addEventListener('input', updatePreview);
-  document.getElementById('customMsg').addEventListener('input', updatePreview);
+  updateCountryFlag();
+
+  // Instant real-time search event listeners
+  var searchInput = document.getElementById('dashSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', renderDashboard);
+    searchInput.addEventListener('search', renderDashboard);
+    searchInput.addEventListener('keyup', renderDashboard);
+    searchInput.addEventListener('change', renderDashboard);
+  }
 });
 
-// ===== DATA PERSISTENCE =====
 function loadData() {
   try {
     var s = localStorage.getItem('ds_settings');
     var c = localStorage.getItem('ds_clients');
-    var h = localStorage.getItem('ds_history');
     settings = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
     clients = c ? JSON.parse(c) : [];
-    history = h ? JSON.parse(h) : [];
     if (!settings.products || settings.products.length === 0) {
       settings.products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
     }
   } catch (e) {
     settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
     clients = [];
-    history = [];
   }
 }
 
 function saveData() {
   localStorage.setItem('ds_settings', JSON.stringify(settings));
   localStorage.setItem('ds_clients', JSON.stringify(clients));
-  localStorage.setItem('ds_history', JSON.stringify(history));
 }
 
-// ===== TABS =====
-function setupTabs() {
-  var buttons = document.querySelectorAll('.tab-btn');
-  buttons.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var tab = btn.dataset.tab;
-      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
-      document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.remove('active'); });
-      btn.classList.add('active');
-      document.getElementById('tab-' + tab).classList.add('active');
-      if (tab === 'dashboard') renderDashboard();
-      if (tab === 'history') renderHistory();
-      if (tab === 'settings') renderSettings();
-    });
+function switchTab(tabId) {
+  document.querySelectorAll('.bnav-btn').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
   });
+  document.querySelectorAll('.drawer-link').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.tab-pane').forEach(function (pane) {
+    pane.classList.remove('active');
+  });
+  var target = document.getElementById('tab-' + tabId);
+  if (target) target.classList.add('active');
+
+  // Always keep hamburger menu available
+  var btnHam = document.getElementById('btnHamburger');
+  if (btnHam) btnHam.style.display = 'flex';
+
+  if (tabId === 'dashboard') renderDashboard();
+  if (tabId === 'settings') renderSettings();
 }
 
-// ===== PRODUCT GRID =====
+function openDrawer() {
+  var overlay = document.getElementById('drawerOverlay');
+  var sidebar = document.getElementById('drawerSidebar');
+  if (overlay) overlay.classList.add('open');
+  if (sidebar) sidebar.classList.add('open');
+}
+
+function closeDrawer() {
+  var overlay = document.getElementById('drawerOverlay');
+  var sidebar = document.getElementById('drawerSidebar');
+  if (overlay) overlay.classList.remove('open');
+  if (sidebar) sidebar.classList.remove('open');
+}
+
+function toggleExtra() {
+  var body = document.getElementById('extraBody');
+  var caret = document.getElementById('extraCaret');
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (caret) caret.classList.toggle('open', !isOpen);
+}
+
+function getProductSvg(type) {
+  switch (type) {
+    case 'qr':
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<rect x="3" y="3" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="14" y="3" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="3" y="14" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="15" y="15" width="5" height="5" rx="1"></rect>' +
+        '</svg>';
+    case 'menu':
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<path d="M18 2v20M18 8a3 3 0 0 1-3-3V2M6 2v7a3 3 0 0 0 3 3v10M9 2v4"></path>' +
+        '</svg>';
+    case 'web':
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<circle cx="12" cy="12" r="10"></circle>' +
+        '<line x1="2" y1="12" x2="22" y2="12"></line>' +
+        '<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>' +
+        '</svg>';
+    case 'social':
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<rect x="3" y="3" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="14" y="3" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="3" y="14" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="14" y="14" width="7" height="7" rx="1.5"></rect>' +
+        '</svg>';
+    default:
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<rect x="3" y="3" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="14" y="3" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="3" y="14" width="7" height="7" rx="1.5"></rect>' +
+        '<rect x="14" y="14" width="7" height="7" rx="1.5"></rect>' +
+        '</svg>';
+  }
+}
+
 function renderProductGrid() {
   var grid = document.getElementById('productGrid');
+  if (!grid) return;
   grid.innerHTML = '';
+
   settings.products.forEach(function (p) {
-    var div = document.createElement('div');
-    div.className = 'product-chip' + (selectedProduct && selectedProduct.id === p.id ? ' selected' : '');
+    var isSelected = selectedProduct && selectedProduct.id === p.id;
+    var chip = document.createElement('div');
+    chip.className = 'product-chip' + (isSelected ? ' selected' : '');
 
-    var emojiSpan = document.createElement('span');
-    emojiSpan.className = 'product-emoji';
-    emojiSpan.textContent = p.emoji;
+    var iconWrap = document.createElement('div');
+    iconWrap.className = 'chip-icon-wrap';
+    if (p.type) {
+      iconWrap.innerHTML = getProductSvg(p.type);
+    } else {
+      iconWrap.textContent = p.emoji || '📦';
+    }
 
-    var nameSpan = document.createElement('span');
-    nameSpan.className = 'product-name';
-    nameSpan.textContent = p.name;
+    var nameEl = document.createElement('div');
+    nameEl.className = 'chip-name';
+    nameEl.textContent = p.name;
 
-    var taglineSpan = document.createElement('span');
-    taglineSpan.className = 'product-tagline';
-    taglineSpan.textContent = p.tagline;
+    var tagEl = document.createElement('div');
+    tagEl.className = 'chip-tag';
+    tagEl.textContent = p.tagline || '';
 
-    div.appendChild(emojiSpan);
-    div.appendChild(nameSpan);
-    div.appendChild(taglineSpan);
+    chip.appendChild(iconWrap);
+    chip.appendChild(nameEl);
+    chip.appendChild(tagEl);
 
-    div.addEventListener('click', function () { selectProduct(p.id); });
-    grid.appendChild(div);
+    if (isSelected) {
+      var check = document.createElement('div');
+      check.className = 'chip-check';
+      check.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+      chip.appendChild(check);
+    }
+
+    chip.addEventListener('click', function () {
+      selectedProduct = p;
+      renderProductGrid();
+    });
+
+    grid.appendChild(chip);
   });
-}
-
-function selectProduct(id) {
-  selectedProduct = settings.products.find(function (p) { return p.id === id; }) || null;
-  renderProductGrid();
-  updatePreview();
-}
-
-// ===== MESSAGE PREVIEW =====
-function updatePreview() {
-  var nameEl = document.getElementById('clientName');
-  var name = nameEl ? nameEl.value.trim() : '';
-  if (!name) name = 'Valued Customer';
-
-  var preview = document.getElementById('sendPreview');
-  var previewText = document.getElementById('previewText');
-  var directLinkWrap = document.getElementById('directLinkWrap');
-  var directLinkA = document.getElementById('directLinkA');
-
-  if (!selectedProduct) {
-    if (preview) preview.style.display = 'none';
-    if (directLinkWrap) directLinkWrap.style.display = 'none';
-    return;
-  }
-
-  var msg = buildMessage(name, selectedProduct);
-  if (previewText) previewText.textContent = msg;
-  if (preview) preview.style.display = 'block';
-
-  // Live direct link update
-  var cc = document.getElementById('countryCode')?.value || '91';
-  var rawNum = document.getElementById('whatsappNumber')?.value || '';
-  var num = rawNum.replace(/\D/g, '');
-  if (num.startsWith('0')) num = num.substring(1);
-  if (cc === '91' && num.length === 12 && num.startsWith('91')) num = num.substring(2);
-
-  if (num.length >= 10 && directLinkWrap && directLinkA) {
-    var fullNumber = cc + num;
-    var directUrl = 'https://wa.me/' + fullNumber + '?text=' + encodeURIComponent(msg);
-    directLinkA.href = directUrl;
-    directLinkWrap.style.display = 'block';
-  } else if (directLinkWrap) {
-    directLinkWrap.style.display = 'none';
-  }
 }
 
 function buildMessage(clientName, product) {
   var msg = product.message || '';
   msg = msg.split('{demoLink}').join(product.demoLink || '');
   msg = msg.split('{clientName}').join(clientName);
-  msg = msg.split('{company}').join(settings.companyName || 'Our Company');
+  msg = msg.split('{company}').join(settings.companyName || 'DemoSender');
 
-  var extraEl = document.getElementById('customMsg');
-  var extra = extraEl ? extraEl.value.trim() : '';
-  if (extra) msg = msg + '\n\n' + extra;
-
+  var extra = document.getElementById('customMsg');
+  var extraVal = extra ? extra.value.trim() : '';
+  if (extraVal) {
+    msg = msg + '\n\n' + extraVal;
+  }
   return msg;
 }
 
-// ===== HELPER: RELIABLE WHATSAPP OPENER =====
-function openWhatsApp(fullNumber, message, mode) {
-  var encodedMsg = encodeURIComponent(message);
-  var waUrl = '';
-
-  if (mode === 'web') {
-    // Direct WhatsApp Web in Browser
-    waUrl = 'https://web.whatsapp.com/send?phone=' + fullNumber + '&text=' + encodedMsg;
-  } else {
-    // Official wa.me universal link (works on phone apps and desktop apps)
-    waUrl = 'https://wa.me/' + fullNumber + '?text=' + encodedMsg;
-  }
-
-  // Update direct link button as backup
-  var directLinkWrap = document.getElementById('directLinkWrap');
-  var directLinkA = document.getElementById('directLinkA');
-  if (directLinkWrap && directLinkA) {
-    directLinkA.href = waUrl;
-    directLinkWrap.style.display = 'block';
-  }
-
-  // Try direct window open
-  var win = window.open(waUrl, '_blank');
-  if (!win || win.closed || typeof win.closed === 'undefined') {
-    // If popup was blocked by browser, redirect current window or trigger anchor click
-    var a = document.createElement('a');
-    a.href = waUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+function getWhatsAppUrl(fullNumber, message) {
+  return 'https://api.whatsapp.com/send?phone=' + fullNumber + '&text=' + encodeURIComponent(message);
 }
 
-// ===== SEND DEMO =====
-function sendDemo(mode) {
-  mode = mode || 'app';
-  var name = document.getElementById('clientName').value.trim();
-  var cc = document.getElementById('countryCode').value;
-  var rawNum = document.getElementById('whatsappNumber').value.trim();
+function handleSendClick(event) {
+  var nameEl = document.getElementById('clientName');
+  var numEl = document.getElementById('whatsappNumber');
+  var ccEl = document.getElementById('countryCode');
 
-  // Strip non-numeric characters
+  var name = nameEl ? nameEl.value.trim() : '';
+  var rawNum = numEl ? numEl.value.trim() : '';
+  var cc = ccEl ? ccEl.value : '91';
+
   var num = rawNum.replace(/\D/g, '');
 
   if (!name) {
     showToast('⚠️ Please enter the client name!');
-    document.getElementById('clientName').focus();
-    return;
+    if (nameEl) nameEl.focus();
+    if (event) event.preventDefault();
+    return false;
   }
 
   if (!num || num.length < 10) {
     showToast('⚠️ Please enter a 10-digit WhatsApp number!');
-    document.getElementById('whatsappNumber').focus();
-    return;
+    if (numEl) numEl.focus();
+    if (event) event.preventDefault();
+    return false;
   }
 
-  // Sanitization: remove leading 0
-  if (num.startsWith('0')) {
-    num = num.substring(1);
-  }
-
-  // Sanitization: if country code was typed twice
-  if (cc === '91' && num.length === 12 && num.startsWith('91')) {
-    num = num.substring(2);
-  }
+  if (num.startsWith('0')) num = num.substring(1);
+  if (cc === '91' && num.length === 12 && num.startsWith('91')) num = num.substring(2);
 
   if (!selectedProduct && settings.products && settings.products.length > 0) {
     selectedProduct = settings.products[0];
   }
-
   if (!selectedProduct) {
     showToast('⚠️ Please select a product!');
-    return;
+    if (event) event.preventDefault();
+    return false;
   }
 
   var fullNumber = cc + num;
   var message = buildMessage(name, selectedProduct);
+  var waUrl = getWhatsAppUrl(fullNumber, message);
 
-  var clientId = saveClient(name, num, cc, selectedProduct);
-  saveHistory(clientId, name, fullNumber, selectedProduct);
+  var btn = document.getElementById('sendBtn');
+  if (btn) btn.href = waUrl;
 
+  saveClient(name, num, cc, selectedProduct);
   showToast('🚀 Opening WhatsApp...');
-  openWhatsApp(fullNumber, message, mode);
+
+  setTimeout(function () {
+    if (nameEl) nameEl.value = '';
+    if (numEl) numEl.value = '';
+    var cm = document.getElementById('customMsg');
+    if (cm) cm.value = '';
+  }, 400);
+
+  return true;
 }
 
 function saveClient(name, number, cc, product) {
@@ -292,9 +301,10 @@ function saveClient(name, number, cc, product) {
       break;
     }
   }
-  var now = new Date().toISOString();
 
+  var now = new Date().toISOString();
   if (existing) {
+    existing.name = name;
     existing.product = product.id;
     existing.sentAt = now;
     saveData();
@@ -302,551 +312,460 @@ function saveClient(name, number, cc, product) {
   }
 
   var id = 'c_' + Date.now();
-  clients.push({ id: id, name: name, number: number, cc: cc, product: product.id, sentAt: now, followup: null, followupDone: false });
+  clients.push({
+    id: id,
+    name: name,
+    number: number,
+    cc: cc,
+    product: product.id,
+    sentAt: now,
+    followup: null,
+    followupDone: false
+  });
   saveData();
   return id;
 }
 
-function saveHistory(clientId, name, fullNumber, product) {
-  history.unshift({
-    id: 'h_' + Date.now(),
-    clientId: clientId,
-    clientName: name,
-    number: fullNumber,
-    product: product.id,
-    sentAt: new Date().toISOString()
-  });
-  if (history.length > 200) history = history.slice(0, 200);
-  saveData();
-}
-
-// ===== DASHBOARD =====
 function renderDashboard() {
+  loadData();
   var filterEl = document.getElementById('dashFilter');
   var searchEl = document.getElementById('dashSearch');
+  var clearBtn = document.getElementById('dashSearchClear');
   var filter = filterEl ? filterEl.value : 'all';
-  var search = searchEl ? searchEl.value.toLowerCase() : '';
+  var search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+
+  if (clearBtn) {
+    clearBtn.style.display = (searchEl && searchEl.value.trim().length > 0) ? 'flex' : 'none';
+  }
 
   var total = clients.length;
   var pending = clients.filter(function (c) { return !c.followupDone && c.followup; }).length;
-  var todayStr = todayISO();
-  var overdue = clients.filter(function (c) { return c.followup && !c.followupDone && c.followup.date < todayStr; }).length;
+  var today = todayISO();
+  var overdue = clients.filter(function (c) { return c.followup && !c.followupDone && c.followup.date < today; }).length;
 
-  // Build stats using DOM methods -- no innerHTML with HTML strings
-  var statsRow = document.getElementById('statsRow');
-  statsRow.innerHTML = '';
+  var sTot = document.getElementById('statTotal');
+  var sFol = document.getElementById('statFollowups');
+  var sOve = document.getElementById('statOverdue');
+  if (sTot) sTot.textContent = total;
+  if (sFol) sFol.textContent = pending;
+  if (sOve) sOve.textContent = overdue;
 
-  var statsData = [
-    { number: total, label: 'Total Clients', color: 'var(--primary)' },
-    { number: pending, label: 'Follow-ups', color: 'var(--warning)' },
-    { number: overdue, label: 'Overdue', color: 'var(--danger)' }
-  ];
+  var clearBar = document.getElementById('clearBar');
+  if (clearBar) {
+    clearBar.style.display = total > 0 ? 'flex' : 'none';
+  }
 
-  statsData.forEach(function (s) {
-    var card = document.createElement('div');
-    card.className = 'stat-card';
-
-    var num = document.createElement('div');
-    num.className = 'stat-number';
-    num.style.color = s.color;
-    num.textContent = s.number;
-
-    var lbl = document.createElement('div');
-    lbl.className = 'stat-label';
-    lbl.textContent = s.label;
-
-    card.appendChild(num);
-    card.appendChild(lbl);
-    statsRow.appendChild(card);
-  });
-
-  // Filter clients
+  // 1. Filter dropdown (all, pending, done)
   var filtered = clients.slice();
   if (filter === 'pending') filtered = filtered.filter(function (c) { return c.followup && !c.followupDone; });
   if (filter === 'done') filtered = filtered.filter(function (c) { return c.followupDone; });
-  if (search) filtered = filtered.filter(function (c) {
-    return c.name.toLowerCase().indexOf(search) !== -1 || c.number.indexOf(search) !== -1;
-  });
 
-  filtered.sort(function (a, b) {
-    var aOver = isOverdue(a), bOver = isOverdue(b);
-    if (aOver && !bOver) return -1;
-    if (!aOver && bOver) return 1;
-    return new Date(b.sentAt) - new Date(a.sentAt);
-  });
+  // Robust, real-time smart search
+  if (search) {
+    var searchDigits = search.replace(/\D/g, '');
+    filtered = filtered.filter(function (c) {
+      if (!c) return false;
+      var name = (c.name || c.clientName || '').toLowerCase();
+      var num = (c.number || c.phone || '').toLowerCase();
+      var numOnly = num.replace(/\D/g, '');
+      var cc = String(c.cc || '');
+      var fullNum1 = cc + numOnly;
+      var fullNum2 = '+' + cc + ' ' + num;
+      var fullNum3 = '+' + cc + numOnly;
+
+      var prod = settings.products.find(function (p) { return p.id === c.product; });
+      var prodName = prod ? prod.name.toLowerCase() : '';
+      var prodTag = prod && prod.tagline ? prod.tagline.toLowerCase() : '';
+
+      // Match name
+      if (name.indexOf(search) !== -1) return true;
+
+      // Match initials (e.g. 'RS' for 'Rahul Sharma')
+      var initials = name.split(/\s+/).map(function (w) { return w[0] || ''; }).join('').toLowerCase();
+      if (initials && initials === search) return true;
+
+      // Match product name, id, or tagline
+      if (prodName && prodName.indexOf(search) !== -1) return true;
+      if (c.product && c.product.toLowerCase().indexOf(search) !== -1) return true;
+      if (prodTag && prodTag.indexOf(search) !== -1) return true;
+
+      // Match formatted phone strings
+      if (num.indexOf(search) !== -1) return true;
+      if (fullNum1.indexOf(search) !== -1) return true;
+      if (fullNum2.toLowerCase().indexOf(search) !== -1) return true;
+      if (fullNum3.indexOf(search) !== -1) return true;
+
+      // Match digits-only (even 1 digit or country code digits)
+      if (searchDigits.length > 0) {
+        if (numOnly.indexOf(searchDigits) !== -1) return true;
+        if (fullNum1.indexOf(searchDigits) !== -1) return true;
+      }
+
+      // Match followup note if present
+      if (c.followup && c.followup.note && c.followup.note.toLowerCase().indexOf(search) !== -1) return true;
+
+      return false;
+    });
+  }
+
+  var sab = document.getElementById('searchActiveBar');
+  if (sab) {
+    if (search) {
+      sab.className = 'search-active-bar';
+      sab.style.display = 'flex';
+      sab.innerHTML = '<span>Showing <b>' + filtered.length + '</b> of ' + total + ' clients for \"' + escapeHtml(search) + '\"</span>' +
+        '<button type="button" onclick="resetSearch()">Show All</button>';
+    } else {
+      sab.style.display = 'none';
+    }
+  }
+
+  filtered.sort(function (a, b) { return new Date(b.sentAt) - new Date(a.sentAt); });
 
   var list = document.getElementById('clientList');
+  if (!list) return;
   list.innerHTML = '';
 
   if (filtered.length === 0) {
-    var empty = document.createElement('div');
-    empty.className = 'empty-state';
-    empty.innerHTML = '<div class="empty-icon">\uD83D\uDCED</div><p>No clients found</p><small>Send a demo first to see clients here!</small>';
-    list.appendChild(empty);
+    var emptyBox = document.createElement('div');
+    emptyBox.className = 'empty-box';
+
+    if (search) {
+      emptyBox.innerHTML =
+        '<div style="font-size:38px;margin-bottom:12px;opacity:0.6;">🔍</div>' +
+        '<div class="empty-title">No matching clients found</div>' +
+        '<div class="empty-desc">No clients match "<b>' + escapeHtml(search) + '</b>".</div>' +
+        '<button type="button" class="btn-clear-search" onclick="resetSearch()">✕ Clear Search</button>';
+    } else {
+      emptyBox.innerHTML =
+        '<div class="mailbox-svg">' +
+        '<svg viewBox="0 0 160 120" fill="none" style="width:100%;height:100%;">' +
+        '<ellipse cx="80" cy="100" rx="56" ry="10" fill="#e5e7eb"></ellipse>' +
+        '<rect x="73" y="55" width="14" height="42" rx="2" fill="#374151"></rect>' +
+        '<rect x="42" y="25" width="76" height="38" rx="8" fill="#1f2937"></rect>' +
+        '<path d="M42 35 C42 25 50 20 62 20 L98 20 C110 20 118 25 118 35 L118 63 L42 63 Z" fill="#4b5563"></path>' +
+        '<rect x="66" y="28" width="36" height="24" rx="3" fill="#ffffff"></rect>' +
+        '<polygon points="66,28 84,40 102,28" fill="#e5e7eb"></polygon>' +
+        '<path d="M66 48 L76 38 M102 48 L92 38" stroke="#d1d5db" stroke-width="1.5"></path>' +
+        '<rect x="115" y="32" width="4" height="20" rx="1" fill="#9ca3af"></rect>' +
+        '<path d="M119 32 L132 38 L119 44 Z" fill="#ef4444"></path>' +
+        '<path d="M136 24 L138 28 L142 30 L138 32 L136 36 L134 32 L130 30 L134 28 Z" fill="#d1d5db"></path>' +
+        '<path d="M30 42 L31.5 45 L34.5 46.5 L31.5 48 L30 51 L28.5 48 L25.5 46.5 L28.5 45 Z" fill="#d1d5db"></path>' +
+        '<circle cx="108" cy="18" r="2" fill="#d1d5db"></circle>' +
+        '</svg>' +
+        '</div>' +
+        '<div class="empty-title">No clients found</div>' +
+        '<div class="empty-desc">Send a demo first to see clients here!</div>';
+    }
+
+    list.appendChild(emptyBox);
     return;
   }
 
   filtered.forEach(function (c) {
-    var card = buildClientCard(c);
-    list.appendChild(card);
+    list.appendChild(buildClientCard(c));
   });
 }
 
 function buildClientCard(c) {
   var product = settings.products.find(function (p) { return p.id === c.product; });
-  var overdue = isOverdue(c);
-  var dueToday = isDueToday(c);
+  var today = todayISO();
+  var overdue = c.followup && !c.followupDone && c.followup.date < today;
+  var dueToday = c.followup && !c.followupDone && c.followup.date === today;
   var initials = c.name.split(' ').map(function (w) { return w[0] || ''; }).join('').slice(0, 2).toUpperCase();
 
-  var cardClass = 'client-card';
-  if (c.followupDone) cardClass += ' done';
-  else if (overdue) cardClass += ' overdue';
-  else if (dueToday) cardClass += ' due-today';
-
   var card = document.createElement('div');
-  card.className = cardClass;
-  card.id = 'cc-' + c.id;
+  card.className = 'client-item' + (c.followupDone ? ' done' : overdue ? ' overdue' : '');
 
-  // Top row
-  var top = document.createElement('div');
-  top.className = 'client-top';
+  var headRow = document.createElement('div');
+  headRow.className = 'ci-head';
 
   var avatar = document.createElement('div');
-  avatar.className = 'client-avatar';
+  avatar.className = 'ci-avatar';
   avatar.textContent = initials;
 
-  var info = document.createElement('div');
-  info.className = 'client-info';
+  var col = document.createElement('div');
+  col.style.flex = '1';
+  col.style.minWidth = '0';
 
-  var nameDiv = document.createElement('div');
-  nameDiv.className = 'client-name';
-  nameDiv.textContent = c.name;
+  var nameEl = document.createElement('div');
+  nameEl.className = 'ci-name';
+  nameEl.textContent = c.name;
 
-  var numDiv = document.createElement('div');
-  numDiv.className = 'client-number';
-  numDiv.textContent = '\uD83D\uDCF1 +' + c.cc + ' ' + c.number;
+  var phoneEl = document.createElement('div');
+  phoneEl.className = 'ci-phone';
+  phoneEl.textContent = '📱 +' + c.cc + ' ' + c.number;
 
-  info.appendChild(nameDiv);
-  info.appendChild(numDiv);
-  top.appendChild(avatar);
-  top.appendChild(info);
+  col.appendChild(nameEl);
+  col.appendChild(phoneEl);
+  headRow.appendChild(avatar);
+  headRow.appendChild(col);
 
-  // Meta badges
-  var meta = document.createElement('div');
-  meta.className = 'client-meta';
+  // Actions wrapper: WhatsApp Remind button + Red trash button
+  var actionsWrap = document.createElement('div');
+  actionsWrap.className = 'ci-head-actions';
+
+  // Green WhatsApp "Remind" button
+  var remindBtn = document.createElement('button');
+  remindBtn.type = 'button';
+  remindBtn.className = 'ci-remind-btn';
+  remindBtn.title = 'Remind ' + (c.name || 'client') + ' on WhatsApp';
+  remindBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="currentColor">' +
+    '<path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.04 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.03C9.36 7.03 9.08 7.1 8.84 7.35C8.6 7.61 7.94 8.22 7.94 9.47C7.94 10.72 8.86 11.93 8.98 12.1C9.11 12.27 10.76 14.88 13.33 15.97C15.47 16.87 15.91 16.69 16.37 16.65C16.83 16.6 17.86 16.03 18.07 15.43C18.28 14.83 18.28 14.32 18.22 14.21C18.15 14.1 17.98 14.04 17.73 13.92C17.48 13.79 16.26 13.2 16.03 13.11C15.81 13.03 15.65 12.98 15.48 13.23C15.31 13.48 14.84 14.04 14.7 14.21C14.55 14.37 14.41 14.39 14.16 14.27C13.91 14.14 12.87 13.8 11.63 12.7C10.67 11.84 10.02 10.78 9.89 10.56C9.77 10.34 9.88 10.22 10 10.1C10.11 9.99 10.24 9.82 10.37 9.68C10.5 9.53 10.54 9.43 10.62 9.26C10.71 9.1 10.67 8.95 10.6 8.82C10.54 8.7 10.07 7.53 9.87 7.05C9.67 6.58 9.48 6.64 9.34 6.64C9.21 6.63 9.06 6.63 8.91 6.63L9.53 7.03Z"/>' +
+    '</svg>' +
+    '<span>Remind</span>';
+  remindBtn.onclick = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    sendReminder(c.id);
+  };
+  actionsWrap.appendChild(remindBtn);
+
+  // Small stylish red trash button
+  var trashBtn = document.createElement('button');
+  trashBtn.type = 'button';
+  trashBtn.className = 'ci-trash-btn';
+  trashBtn.title = 'Delete client';
+  trashBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<polyline points="3 6 5 6 21 6"></polyline>' +
+    '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>' +
+    '<line x1="10" y1="11" x2="10" y2="17"></line>' +
+    '<line x1="14" y1="11" x2="14" y2="17"></line>' +
+    '</svg>';
+  trashBtn.onclick = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    confirmAndDeleteClient(c.id, c.number, c.name);
+  };
+  actionsWrap.appendChild(trashBtn);
+
+  headRow.appendChild(actionsWrap);
+
+  var badgesRow = document.createElement('div');
+  badgesRow.className = 'ci-badges';
 
   if (product) {
-    var prodBadge = document.createElement('span');
-    prodBadge.className = 'badge badge-product';
-    prodBadge.textContent = product.emoji + ' ' + product.name;
-    meta.appendChild(prodBadge);
+    var pBadge = document.createElement('span');
+    pBadge.className = 'ci-badge b-product';
+    pBadge.textContent = (product.emoji || '📦') + ' ' + product.name;
+    badgesRow.appendChild(pBadge);
   }
 
-  var dateBadge = document.createElement('span');
-  dateBadge.className = 'badge badge-date';
-  dateBadge.textContent = '\uD83D\uDD50 ' + formatDate(c.sentAt);
-  meta.appendChild(dateBadge);
+  var dBadge = document.createElement('span');
+  dBadge.className = 'ci-badge b-time';
+  dBadge.textContent = '🕐 ' + formatDate(c.sentAt);
+  badgesRow.appendChild(dBadge);
+
+  if (c.remindedAt) {
+    var rBadge = document.createElement('span');
+    rBadge.className = 'ci-badge b-reminded';
+    rBadge.textContent = '🔔 Reminded ' + formatDate(c.remindedAt);
+    badgesRow.appendChild(rBadge);
+  }
 
   if (c.followup && !c.followupDone) {
     var fBadge = document.createElement('span');
     if (overdue) {
-      fBadge.className = 'badge badge-overdue';
-      fBadge.textContent = '\uD83D\uDD34 Overdue: ' + formatDateStr(c.followup.date);
+      fBadge.className = 'ci-badge b-overdue';
+      fBadge.textContent = '🔴 Overdue: ' + formatDateStr(c.followup.date);
     } else if (dueToday) {
-      fBadge.className = 'badge badge-today';
-      fBadge.textContent = '\uD83D\uDFE1 Follow up today!';
+      fBadge.className = 'ci-badge b-today';
+      fBadge.textContent = '🟡 Follow up today!';
     } else {
-      fBadge.className = 'badge badge-date';
-      fBadge.textContent = '\uD83D\uDCC5 ' + formatDateStr(c.followup.date);
+      fBadge.className = 'ci-badge b-time';
+      fBadge.textContent = '📅 ' + formatDateStr(c.followup.date);
     }
-    meta.appendChild(fBadge);
+    badgesRow.appendChild(fBadge);
   } else if (c.followupDone) {
     var doneBadge = document.createElement('span');
-    doneBadge.className = 'badge badge-done';
-    doneBadge.textContent = '\u2705 Follow-up Done';
-    meta.appendChild(doneBadge);
+    doneBadge.className = 'ci-badge b-done';
+    doneBadge.textContent = '✅ Follow-up Done';
+    badgesRow.appendChild(doneBadge);
   }
 
-  if (c.followup && c.followup.note) {
-    var noteBadge = document.createElement('span');
-    noteBadge.className = 'badge badge-date';
-    noteBadge.textContent = '\uD83D\uDCDD ' + c.followup.note;
-    meta.appendChild(noteBadge);
-  }
-
-  // Action buttons
-  var actions = document.createElement('div');
-  actions.className = 'client-actions';
-
-  var resendBtn = document.createElement('button');
-  resendBtn.className = 'action-btn btn-resend';
-  resendBtn.textContent = '\uD83D\uDCE4 Resend';
-  resendBtn.onclick = function () { resendDemo(c.id); };
-
-  var followBtn = document.createElement('button');
-  followBtn.className = 'action-btn btn-followup';
-  followBtn.textContent = '\uD83D\uDCC5 Follow-up';
-  followBtn.onclick = function () { openFollowup(c.id); };
-
-  var delBtn = document.createElement('button');
-  delBtn.className = 'action-btn btn-delete';
-  delBtn.textContent = '\uD83D\uDDD1\uFE0F';
-  delBtn.onclick = function () { deleteClient(c.id); };
-
-  actions.appendChild(resendBtn);
-  actions.appendChild(followBtn);
-
-  if (!c.followupDone && c.followup) {
-    var doneBtn = document.createElement('button');
-    doneBtn.className = 'action-btn btn-done';
-    doneBtn.textContent = '\u2705 Done';
-    doneBtn.onclick = function () { markFollowupDone(c.id); };
-    actions.appendChild(doneBtn);
-  }
-
-  actions.appendChild(delBtn);
-
-  card.appendChild(top);
-  card.appendChild(meta);
-  card.appendChild(actions);
-
+  card.appendChild(headRow);
+  card.appendChild(badgesRow);
   return card;
 }
 
-// ===== HISTORY =====
-function renderHistory() {
-  var searchEl = document.getElementById('historySearch');
-  var prodEl = document.getElementById('historyProduct');
-  var search = searchEl ? searchEl.value.toLowerCase() : '';
-  var prodFilter = prodEl ? prodEl.value : 'all';
-
-  // Populate product dropdown
-  var currentVal = prodEl ? prodEl.value : 'all';
-  prodEl.innerHTML = '';
-  var allOpt = document.createElement('option');
-  allOpt.value = 'all';
-  allOpt.textContent = 'All Products';
-  prodEl.appendChild(allOpt);
-
-  settings.products.forEach(function (p) {
-    var opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.emoji + ' ' + p.name;
-    if (opt.value === currentVal) opt.selected = true;
-    prodEl.appendChild(opt);
-  });
-
-  var filtered = history.slice();
-  if (prodFilter !== 'all') filtered = filtered.filter(function (h) { return h.product === prodFilter; });
-  if (search) filtered = filtered.filter(function (h) {
-    return h.clientName.toLowerCase().indexOf(search) !== -1 || h.number.indexOf(search) !== -1;
-  });
-
-  var list = document.getElementById('historyList');
-  list.innerHTML = '';
-
-  if (filtered.length === 0) {
-    var empty = document.createElement('div');
-    empty.className = 'empty-state';
-    empty.innerHTML = '<div class="empty-icon">\uD83D\uDCDC</div><p>No history yet</p><small>Sent demos will appear here</small>';
-    list.appendChild(empty);
+function confirmAndDeleteClient(clientId, clientNumber, clientName) {
+  var conf = prompt("⚠️ Type 'clear' to confirm deleting " + (clientName || "this client") + ":");
+  if (!conf || conf.trim().toLowerCase() !== 'clear') {
+    showToast("❌ Cancelled! You must type 'clear' to delete.");
     return;
   }
+  deleteClient(clientId, clientNumber);
+}
+window.confirmAndDeleteClient = confirmAndDeleteClient;
 
-  filtered.forEach(function (h) {
-    var product = settings.products.find(function (p) { return p.id === h.product; });
-
-    var item = document.createElement('div');
-    item.className = 'history-item';
-
-    var icon = document.createElement('div');
-    icon.className = 'history-product-icon';
-    icon.textContent = product ? product.emoji : '\uD83D\uDCE6';
-
-    var info = document.createElement('div');
-    info.className = 'history-info';
-
-    var hName = document.createElement('div');
-    hName.className = 'history-name';
-    hName.textContent = h.clientName;
-
-    var hDetails = document.createElement('div');
-    hDetails.className = 'history-details';
-    hDetails.textContent = '\uD83D\uDCF1 +' + h.number + ' \u00B7 ' + formatDate(h.sentAt);
-
-    var hProduct = document.createElement('div');
-    hProduct.className = 'history-product-name';
-    hProduct.textContent = product ? product.name : h.product;
-
-    info.appendChild(hName);
-    info.appendChild(hDetails);
-    info.appendChild(hProduct);
-
-    var resendBtn = document.createElement('button');
-    resendBtn.className = 'history-resend';
-    resendBtn.title = 'Resend';
-    resendBtn.textContent = '\uD83D\uDCE4';
-    resendBtn.onclick = (function (hid) {
-      return function () { resendDemoByHistory(hid); };
-    })(h.id);
-
-    item.appendChild(icon);
-    item.appendChild(info);
-    item.appendChild(resendBtn);
-    list.appendChild(item);
+function deleteClient(clientId, clientNumber) {
+  loadData();
+  clients = clients.filter(function (c) {
+    if (!c) return false;
+    if (clientId && (c.id === clientId || String(c.id) === String(clientId))) return false;
+    if (clientNumber && (c.number === clientNumber || String(c.number) === String(clientNumber))) return false;
+    return true;
   });
-}
-
-// ===== FOLLOW-UP =====
-function openFollowup(clientId) {
-  followupTargetId = clientId;
-  var c = clients.find(function (cl) { return cl.id === clientId; });
-  document.getElementById('followupClientName').textContent = '\uD83D\uDC64 ' + c.name;
-  document.getElementById('followupDate').value = c.followup ? c.followup.date : '';
-  document.getElementById('followupNote').value = c.followup ? c.followup.note : '';
-  document.getElementById('followupModal').style.display = 'flex';
-}
-
-function saveFollowup() {
-  var date = document.getElementById('followupDate').value;
-  var note = document.getElementById('followupNote').value.trim();
-  if (!date) { showToast('Please select a date!'); return; }
-
-  var c = clients.find(function (cl) { return cl.id === followupTargetId; });
-  if (c) {
-    c.followup = { date: date, note: note };
-    c.followupDone = false;
-    saveData();
-    renderDashboard();
-    showToast('Follow-up reminder set!');
-  }
-  closeModal();
-}
-
-function markFollowupDone(clientId) {
-  var c = clients.find(function (cl) { return cl.id === clientId; });
-  if (c) {
-    c.followupDone = true;
-    saveData();
-    renderDashboard();
-    showToast('Follow-up marked as done!');
-  }
-}
-
-function closeModal() {
-  document.getElementById('followupModal').style.display = 'none';
-  followupTargetId = null;
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('followupModal').addEventListener('click', function (e) {
-    if (e.target === e.currentTarget) closeModal();
-  });
-});
-
-// ===== RESEND =====
-function resendDemo(clientId) {
-  var c = clients.find(function (cl) { return cl.id === clientId; });
-  if (!c) return;
-  var product = settings.products.find(function (p) { return p.id === c.product; });
-  if (!product) { showToast('Product not found!'); return; }
-
-  var message = buildMessage(c.name, product);
-  var fullNumber = c.cc + c.number;
-
-  saveHistory(clientId, c.name, fullNumber, product);
-  c.sentAt = new Date().toISOString();
-  saveData();
-
-  showToast('Opening WhatsApp...');
-  openWhatsApp(fullNumber, message);
-}
-
-function resendDemoByHistory(historyId) {
-  var h = history.find(function (item) { return item.id === historyId; });
-  if (!h) return;
-  var product = settings.products.find(function (p) { return p.id === h.product; });
-  if (!product) { showToast('Product not found!'); return; }
-
-  var message = buildMessage(h.clientName, product);
-  showToast('Opening WhatsApp...');
-  openWhatsApp(h.number, message);
-}
-
-// ===== DELETE =====
-function deleteClient(clientId) {
-  if (!confirm('Are you sure you want to delete this client?')) return;
-  clients = clients.filter(function (c) { return c.id !== clientId; });
-  history = history.filter(function (h) { return h.clientId !== clientId; });
   saveData();
   renderDashboard();
-  showToast('Client deleted');
+  showToast('🗑️ Client deleted');
 }
+window.deleteClient = deleteClient;
 
-// ===== SETTINGS =====
+function clearAllClients() {
+  if (clients.length === 0) {
+    showToast('Dashboard is already empty!');
+    return;
+  }
+  var conf = prompt('⚠️ Type "clear" to delete ALL clients:');
+  if (!conf || conf.trim().toLowerCase() !== 'clear') {
+    showToast('❌ Cancelled! You must type "clear" to delete.');
+    return;
+  }
+  clients = [];
+  saveData();
+  renderDashboard();
+  showToast('🗑️ All clients cleared!');
+}
+window.clearAllClients = clearAllClients;
+
 function renderSettings() {
-  document.getElementById('companyName').value = settings.companyName || '';
-  document.getElementById('introMsg').value = settings.introMsg || '';
-  renderProductSettings();
+  var cn = document.getElementById('companyName');
+  var im = document.getElementById('introMsg');
+  if (cn) cn.value = settings.companyName || '';
+  if (im) im.value = settings.introMsg || '';
+
+  renderProductSettingsList();
 }
 
-function renderProductSettings() {
-  var container = document.getElementById('productSettings');
+function renderProductSettingsList() {
+  var container = document.getElementById('productSettingsList');
+  if (!container) return;
   container.innerHTML = '';
 
-  settings.products.forEach(function (p, i) {
-    var card = document.createElement('div');
-    card.className = 'product-setting-card';
+  settings.products.forEach(function (p, idx) {
+    var topRow = document.createElement('div');
+    topRow.className = 'pm-row';
 
-    var header = document.createElement('div');
-    header.className = 'product-setting-header';
+    var emojiBox = document.createElement('div');
+    emojiBox.className = 'pm-icon';
+    emojiBox.innerHTML = getProductSvg(p.type || 'qr');
 
-    var label = document.createElement('span');
-    label.textContent = p.emoji + ' Product ' + (i + 1);
+    var nameTitle = document.createElement('div');
+    nameTitle.className = 'pm-name';
+    nameTitle.textContent = 'PRODUCT ' + (idx + 1);
 
-    var removeBtn = document.createElement('button');
-    removeBtn.className = 'remove-product-btn';
-    removeBtn.textContent = '\u2715 Remove';
-    removeBtn.onclick = (function (idx) { return function () { removeProduct(idx); }; })(i);
+    var rmBtn = document.createElement('button');
+    rmBtn.type = 'button';
+    rmBtn.className = 'pm-remove-btn';
+    rmBtn.innerHTML = '✕ Remove';
+    rmBtn.onclick = (function (i) {
+      return function () { removeProduct(i); };
+    })(idx);
 
-    header.appendChild(label);
-    header.appendChild(removeBtn);
-    card.appendChild(header);
+    topRow.appendChild(emojiBox);
+    topRow.appendChild(nameTitle);
+    topRow.appendChild(rmBtn);
+    container.appendChild(topRow);
+
+    var expRow = document.createElement('button');
+    expRow.type = 'button';
+    expRow.className = 'pm-expand-btn';
+
+    var expIcon = document.createElement('div');
+    expIcon.className = 'pm-icon';
+    expIcon.innerHTML = getProductSvg(p.type || 'qr');
+
+    var expLabel = document.createElement('div');
+    expLabel.className = 'pm-expand-label';
+    expLabel.textContent = p.name;
+
+    var chevron = document.createElement('div');
+    chevron.innerHTML = '<svg class="pm-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+    expRow.appendChild(expIcon);
+    expRow.appendChild(expLabel);
+    expRow.appendChild(chevron);
+    container.appendChild(expRow);
+
+    var fieldsBox = document.createElement('div');
+    fieldsBox.className = 'pm-fields';
+
+    expRow.onclick = function () {
+      fieldsBox.classList.toggle('open');
+    };
 
     var fields = [
-      { placeholder: 'Emoji', key: 'emoji' },
-      { placeholder: 'Product name', key: 'name' },
-      { placeholder: 'Short tagline', key: 'tagline' },
-      { placeholder: 'Demo Link (https://...)', key: 'demoLink' },
-      { placeholder: 'WhatsApp Message Template', key: 'message' }
+      { key: 'name', placeholder: 'Product Name', value: p.name },
+      { key: 'tagline', placeholder: 'Tagline (e.g. Scan & Connect)', value: p.tagline },
+      { key: 'demoLink', placeholder: 'Demo URL (https://...)', value: p.demoLink },
+      { key: 'message', placeholder: 'WhatsApp Message Template', value: p.message, isArea: true }
     ];
 
     fields.forEach(function (f) {
-      var inp = document.createElement('input');
-      inp.type = 'text';
-      inp.placeholder = f.placeholder;
-      inp.value = p[f.key] || '';
-      inp.style.marginBottom = '8px';
-      inp.oninput = (function (idx, key) {
-        return function () { settings.products[idx][key] = this.value; };
-      })(i, f.key);
-      card.appendChild(inp);
+      var el = f.isArea ? document.createElement('textarea') : document.createElement('input');
+      if (!f.isArea) el.type = 'text';
+      if (f.isArea) el.rows = 4;
+      el.placeholder = f.placeholder;
+      el.value = f.value || '';
+      el.oninput = (function (i, k, lbl) {
+        return function () {
+          settings.products[i][k] = this.value;
+          if (k === 'name') lbl.textContent = this.value || 'Product';
+        };
+      })(idx, f.key, expLabel);
+      fieldsBox.appendChild(el);
     });
 
-    var hint = document.createElement('small');
-    hint.style.cssText = 'color:var(--text-muted);font-size:11px;display:block;margin-top:4px';
-    hint.textContent = 'Variables: {demoLink}  {clientName}  {company}';
-    card.appendChild(hint);
+    var hint = document.createElement('div');
+    hint.className = 'pm-hint';
+    hint.textContent = 'Variables: {clientName}  {demoLink}  {company}';
+    fieldsBox.appendChild(hint);
 
-    container.appendChild(card);
+    container.appendChild(fieldsBox);
   });
 }
 
 function addProduct() {
   settings.products.push({
     id: 'p_' + Date.now(),
-    emoji: '\uD83C\uDD95',
     name: 'New Product',
-    tagline: 'Short description here',
-    demoLink: 'https://yoursite.com/demo/new-product',
-    message: 'Hello {clientName}! \uD83D\uDC4B\n\nHere is the demo for our latest product!\n\n\uD83D\uDD17 Demo: {demoLink}\n\nFeel free to reach out! \uD83D\uDE0A\n\n- {company}'
+    tagline: 'Short tagline here',
+    type: 'qr',
+    emoji: '📲',
+    demoLink: 'https://yoursite.com/demo/new',
+    message: 'Hello {clientName}! 👋\n\nHere is the demo link: {demoLink}\n\n- {company}'
   });
-  renderProductSettings();
+  renderProductSettingsList();
   showToast('New product added!');
 }
 
 function removeProduct(index) {
-  if (settings.products.length <= 1) { showToast('At least one product is required!'); return; }
-  if (!confirm('Remove this product?')) return;
+  if (settings.products.length <= 1) {
+    showToast('At least one product is required!');
+    return;
+  }
   settings.products.splice(index, 1);
-  renderProductSettings();
+  renderProductSettingsList();
+  renderProductGrid();
   showToast('Product removed');
 }
 
 function saveSettings() {
-  settings.companyName = document.getElementById('companyName').value.trim();
-  settings.introMsg = document.getElementById('introMsg').value.trim();
+  var cn = document.getElementById('companyName');
+  var im = document.getElementById('introMsg');
+  settings.companyName = cn ? cn.value.trim() : 'DemoSender';
+  settings.introMsg = im ? im.value.trim() : '';
+
   saveData();
   renderProductGrid();
   if (selectedProduct) {
-    selectedProduct = settings.products.find(function (p) { return p.id === selectedProduct.id; }) || null;
+    selectedProduct = settings.products.find(function (p) { return p.id === selectedProduct.id; }) || settings.products[0];
   }
-  showToast('Settings saved!');
+  showToast('✅ Settings saved!');
 }
 
-// ===== REMINDERS =====
-function checkReminders() {
-  var todayStr = todayISO();
-  var overdueClients = clients.filter(function (c) {
-    return c.followup && !c.followupDone && c.followup.date <= todayStr;
-  });
-  if (overdueClients.length > 0) {
-    var text = overdueClients.length === 1
-      ? 'Follow-up pending for ' + overdueClients[0].name + '!'
-      : overdueClients.length + ' follow-ups are pending!';
-    document.getElementById('reminderText').textContent = '\u26A0\uFE0F ' + text;
-    document.getElementById('reminderBanner').style.display = 'flex';
-  }
-}
-
-function dismissReminder() {
-  document.getElementById('reminderBanner').style.display = 'none';
-}
-
-// ===== EXPORT / IMPORT =====
-function exportData() {
-  var data = { settings: settings, clients: clients, history: history, exportedAt: new Date().toISOString() };
-  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'demosender-backup-' + todayISO() + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('Data exported!');
-}
-
-function importDataClick() {
-  document.getElementById('importFile').click();
-}
-
-function importData(event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function (e) {
-    try {
-      var data = JSON.parse(e.target.result);
-      if (data.settings) settings = data.settings;
-      if (data.clients) clients = data.clients;
-      if (data.history) history = data.history;
-      saveData();
-      renderSettings();
-      renderProductGrid();
-      renderDashboard();
-      renderHistory();
-      showToast('Data imported successfully!');
-    } catch (err) {
-      showToast('Invalid file! Please use a valid JSON backup.');
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-function clearAllData() {
-  if (!confirm('This will permanently delete all data! Are you sure?')) return;
-  if (!confirm('Last chance! All clients, history and settings will be lost. Continue?')) return;
-  localStorage.clear();
-  loadData();
-  renderDashboard();
-  renderHistory();
-  renderSettings();
-  renderProductGrid();
-  showToast('All data cleared');
-}
-
-// ===== HELPERS =====
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -870,20 +789,114 @@ function formatDateStr(dateStr) {
   return parts[2] + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
 }
 
-function isOverdue(c) {
-  if (!c.followup || c.followupDone) return false;
-  return c.followup.date < todayISO();
-}
-
-function isDueToday(c) {
-  if (!c.followup || c.followupDone) return false;
-  return c.followup.date === todayISO();
-}
-
 function showToast(msg, duration) {
-  duration = duration || 2800;
+  duration = duration || 2500;
   var toast = document.getElementById('toast');
+  if (!toast) return;
   toast.textContent = msg;
   toast.classList.add('show');
-  setTimeout(function () { toast.classList.remove('show'); }, duration);
+  setTimeout(function () {
+    toast.classList.remove('show');
+  }, duration);
 }
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderHistory() { }
+
+
+function handleSearchInput() {
+  var s = document.getElementById('dashSearch');
+  var clearBtn = document.getElementById('dashSearchClear');
+  if (clearBtn) {
+    clearBtn.style.display = (s && s.value.trim().length > 0) ? 'flex' : 'none';
+  }
+  renderDashboard();
+}
+window.handleSearchInput = handleSearchInput;
+
+function resetSearch() {
+  var s = document.getElementById('dashSearch');
+  var clearBtn = document.getElementById('dashSearchClear');
+  if (s) {
+    s.value = '';
+    s.focus();
+  }
+  if (clearBtn) {
+    clearBtn.style.display = 'none';
+  }
+  renderDashboard();
+}
+window.resetSearch = resetSearch;
+
+// Multi-tab real-time sync via storage event
+window.addEventListener('storage', function (e) {
+  if (e.key === 'ds_clients' || e.key === 'ds_settings') {
+    loadData();
+    renderDashboard();
+  }
+});
+
+
+function sendReminder(clientId) {
+  var client = clients.find(function (c) { return c && (c.id === clientId || String(c.id) === String(clientId)); });
+  if (!client) {
+    showToast('⚠️ Client not found!');
+    return;
+  }
+
+  var product = settings.products.find(function (p) { return p.id === client.product; }) || (settings.products && settings.products[0]);
+  var prodName = product ? product.name : 'our demo';
+  var demoLink = product && product.demoLink ? product.demoLink : '';
+  var company = settings.companyName || 'DemoSender';
+
+  var msg = 'Hello ' + client.name + '! 👋\n\n' +
+    'Just following up on the *' + prodName + '* demo we shared with you earlier.\n\n';
+
+  if (demoLink) {
+    msg += '🔗 Demo Link: ' + demoLink + '\n\n';
+  }
+
+  msg += 'Did you get a chance to check it out? Feel free to reach out if you have any questions or if you would like to get started! 😊\n\n' +
+    '- ' + company;
+
+  var cc = String(client.cc || '91').replace(/\D/g, '');
+  var num = String(client.number || '').replace(/\D/g, '');
+  var fullNumber = cc + num;
+  var waUrl = 'https://api.whatsapp.com/send?phone=' + fullNumber + '&text=' + encodeURIComponent(msg);
+
+  // Record remind timestamp
+  client.remindedAt = new Date().toISOString();
+  saveData();
+  renderDashboard();
+
+  showToast('🚀 Opening WhatsApp Reminder...');
+  window.open(waUrl, '_blank');
+}
+window.sendReminder = sendReminder;
+
+
+var FLAGS_SVG = {
+  '91': '<svg viewBox="0 0 36 24" class="flag-svg"><rect width="36" height="24" rx="2" fill="#fff"/><rect width="36" height="8" fill="#FF9933"/><rect y="16" width="36" height="8" fill="#138808"/><circle cx="18" cy="12" r="3.2" fill="none" stroke="#000080" stroke-width="0.8"/><circle cx="18" cy="12" r="0.8" fill="#000080"/></svg>',
+  '1': '<svg viewBox="0 0 36 24" class="flag-svg"><rect width="36" height="24" rx="2" fill="#B22234"/><rect y="2" width="36" height="2" fill="#fff"/><rect y="6" width="36" height="2" fill="#fff"/><rect y="10" width="36" height="2" fill="#fff"/><rect y="14" width="36" height="2" fill="#fff"/><rect y="18" width="36" height="2" fill="#fff"/><rect y="22" width="36" height="2" fill="#fff"/><rect width="14" height="12" rx="1" fill="#3C3B6E"/></svg>',
+  '44': '<svg viewBox="0 0 36 24" class="flag-svg"><clipPath id="uk-clip"><rect width="36" height="24" rx="2"/></clipPath><g clip-path="url(#uk-clip)"><rect width="36" height="24" fill="#012169"/><path d="M0 0 L36 24 M36 0 L0 24" stroke="#fff" stroke-width="4"/><path d="M0 0 L36 24 M36 0 L0 24" stroke="#C8102E" stroke-width="2"/><path d="M18 0 v24 M0 12 h36" stroke="#fff" stroke-width="7"/><path d="M18 0 v24 M0 12 h36" stroke="#C8102E" stroke-width="4"/></g></svg>',
+  '971': '<svg viewBox="0 0 36 24" class="flag-svg"><rect width="36" height="8" fill="#00732f"/><rect y="8" width="36" height="8" fill="#fff"/><rect y="16" width="36" height="8" fill="#000"/><rect width="9" height="24" rx="1" fill="#f00"/></svg>',
+  '61': '<svg viewBox="0 0 36 24" class="flag-svg"><rect width="36" height="24" rx="2" fill="#00008b"/><path d="M0 0h18v12H0z" fill="#012169"/><path d="M0 0l18 12M18 0L0 12" stroke="#fff" stroke-width="2"/><path d="M9 0v12M0 6h18" stroke="#fff" stroke-width="3"/><path d="M9 0v12M0 6h18" stroke="#e4002b" stroke-width="1.5"/><circle cx="27" cy="15" r="1.5" fill="#fff"/></svg>'
+};
+
+function updateCountryFlag() {
+  var sel = document.getElementById('countryCode');
+  var wrap = document.getElementById('countryFlagWrap');
+  if (!sel || !wrap) return;
+  var val = sel.value || '91';
+  wrap.innerHTML = FLAGS_SVG[val] || FLAGS_SVG['91'];
+}
+window.updateCountryFlag = updateCountryFlag;
