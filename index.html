@@ -3,60 +3,83 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="favicon.png?v=20261117_logo_v2" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="icon" type="image/png" href="favicon.png?v=20261119_v3" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>DemoSender</title>
-  <link rel="stylesheet" href="style.css?v=20261117_fix4" />
+  <link rel="stylesheet" href="style.css?v=20261119_v3" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#000000" />
 </head>
 
 <body>
 
-  <div class="app-container">
-    <!-- ===== APP LOCK SCREEN OVERLAY ===== -->
-    <div id="appLockScreen" class="app-lock-overlay" style="display:none;">
-      <div class="lock-card">
-        <div class="lock-brand">
-          <img src="logo_horizontal.png?v=20261117_logo_v2" alt="DemoSender" class="lock-logo" />
+  <!-- ===== APP LOCK SCREEN OVERLAY (ALWAYS ACTIVE UNTIL UNLOCKED) ===== -->
+  <div id="appLockScreen" class="app-lock-overlay">
+    <div class="lock-card">
+      <div class="lock-brand">
+        <img src="logo_horizontal.png?v=20261119_v3" alt="DemoSender" class="lock-logo" />
+      </div>
+      <div class="lock-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2 class="lock-title">Security PIN</h2>
+      <p class="lock-sub">Enter your 4-digit PIN to access DemoSender</p>
+
+      <form id="lockForm" onsubmit="return handleUnlock(event)">
+        <div class="pin-input-wrap">
+          <input type="password" id="pinInput" class="pin-input" maxlength="10" inputmode="numeric" placeholder="••••" autocomplete="current-password" autofocus />
+          <button type="button" class="pin-eye-btn" onclick="togglePinVisibility()" aria-label="Toggle PIN Visibility">
+            <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
         </div>
-        <div class="lock-icon-wrap">
+        <div id="lockError" class="lock-error-msg" style="display:none;"></div>
+        <button type="submit" class="btn-unlock-main">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
           </svg>
-        </div>
-        <h2 class="lock-title">Security PIN</h2>
-        <p class="lock-sub">Enter your 4-digit PIN to access DemoSender</p>
+          <span>Unlock DemoSender</span>
+        </button>
+      </form>
 
-        <form id="lockForm" onsubmit="handleUnlock(event)">
-          <div class="pin-input-wrap">
-            <input type="password" id="pinInput" class="pin-input" maxlength="10" inputmode="numeric" placeholder="••••" autocomplete="current-password" autofocus />
-            <button type="button" class="pin-eye-btn" onclick="togglePinVisibility()" aria-label="Toggle PIN Visibility">
-              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-          </div>
-          <div id="lockError" class="lock-error-msg" style="display:none;"></div>
-          <button type="submit" class="btn-unlock-main">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-            </svg>
-            <span>Unlock DemoSender</span>
-          </button>
-        </form>
-
-        <div class="lock-remember-row">
-          <label class="remember-label">
-            <input type="checkbox" id="rememberDevice" />
-            <span>Remember on this device</span>
-          </label>
-        </div>
+      <div class="lock-remember-row">
+        <label class="remember-label">
+          <input type="checkbox" id="rememberDevice" />
+          <span>Remember on this device</span>
+        </label>
       </div>
     </div>
+  </div>
+
+  <script>
+    // Immediate Lock Check: executed before render to prevent any bypass or flicker
+    (function () {
+      try {
+        var isAuth = sessionStorage.getItem('ds_authenticated') === 'true';
+        var isRem = localStorage.getItem('ds_remember_device') === 'true';
+        var el = document.getElementById('appLockScreen');
+        if (el) {
+          if (isAuth || isRem) {
+            el.style.display = 'none';
+          } else {
+            el.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+          }
+        }
+      } catch (err) {}
+    })();
+  </script>
+
+  <div class="app-container">
 
 
     <!-- ===== HEADER (BLACK BAR — CLEAN SQUARE) ===== -->
@@ -460,8 +483,8 @@
     <!-- Firebase Cloud Database SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=20261119_pin"></script>
-  <script src="app.js?v=20261119_pin"></script>
+  <script src="firebase-config.js?v=20261119_v3"></script>
+  <script src="app.js?v=20261119_v3"></script>
 </body>
 
 </html>

@@ -54,6 +54,11 @@ var clients = [];
 var selectedProduct = null;
 
 document.addEventListener('DOMContentLoaded', function () {
+  try {
+    checkAppLock();
+  } catch (e) {
+    console.error('App lock check error:', e);
+  }
   loadData();
   if (!selectedProduct && settings.products && settings.products.length > 0) {
     selectedProduct = settings.products[0];
@@ -63,7 +68,9 @@ document.addEventListener('DOMContentLoaded', function () {
   renderSettings();
   updateCountryFlag();
   initFirebaseSync();
-  checkAppLock();
+  try {
+    checkAppLock();
+  } catch (e) {}
 
   // Instant real-time search event listeners
   var searchInput = document.getElementById('dashSearch');
