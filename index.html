@@ -17,10 +17,10 @@
 <body>
 
   <!-- ===== APP LOCK SCREEN OVERLAY (ALWAYS ACTIVE UNTIL UNLOCKED) ===== -->
-  <div id="appLockScreen" class="app-lock-overlay">
+  <div id="appLockScreen" class="app-lock-overlay" style="position: fixed; inset: 0; z-index: 999999; background: rgba(0, 0, 0, 0.96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 20px;">
     <div class="lock-card">
       <div class="lock-brand">
-        <img src="logo_horizontal.png?v=20261119_v3" alt="DemoSender" class="lock-logo" />
+        <img src="logo_horizontal.png?v=20261119_v4" alt="DemoSender" class="lock-logo" />
       </div>
       <div class="lock-icon-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -64,8 +64,8 @@
     // Immediate Lock Check: executed before render to prevent any bypass or flicker
     (function () {
       try {
-        var isAuth = sessionStorage.getItem('ds_authenticated') === 'true';
-        var isRem = localStorage.getItem('ds_remember_device') === 'true';
+        var isAuth = sessionStorage.getItem('ds_auth_pin_2026') === 'true';
+        var isRem = localStorage.getItem('ds_remember_pin_2026') === 'true';
         var el = document.getElementById('appLockScreen');
         if (el) {
           if (isAuth || isRem) {

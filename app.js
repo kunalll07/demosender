@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initFirebaseSync();
   try {
     checkAppLock();
-  } catch (e) {}
+  } catch (e) { }
 
   // Instant real-time search event listeners
   var searchInput = document.getElementById('dashSearch');
@@ -329,7 +329,7 @@ function saveClient(name, number, cc, product) {
     existing.sentAt = now;
     saveData();
     if (isFirebaseReady && db) {
-      db.collection('clients').doc(existing.id).set(existing).catch(function(e) {
+      db.collection('clients').doc(existing.id).set(existing).catch(function (e) {
         console.warn('Firebase client update notice:', e);
       });
     }
@@ -351,7 +351,7 @@ function saveClient(name, number, cc, product) {
   clients.push(newClient);
   saveData();
   if (isFirebaseReady && db) {
-    db.collection('clients').doc(id).set(newClient).catch(function(e) {
+    db.collection('clients').doc(id).set(newClient).catch(function (e) {
       console.warn('Firebase client save notice:', e);
     });
   }
@@ -664,7 +664,7 @@ function clearAllClients() {
   saveData();
   if (isFirebaseReady && db) {
     toDelete.forEach(function (c) {
-      db.collection('clients').doc(c.id).delete().catch(function () {});
+      db.collection('clients').doc(c.id).delete().catch(function () { });
     });
   }
   renderDashboard();
@@ -927,7 +927,7 @@ function sendReminder(clientId) {
     db.collection('clients').doc(client.id).update({
       remindedAt: client.remindedAt
     }).catch(function () {
-      db.collection('clients').doc(client.id).set(client).catch(function () {});
+      db.collection('clients').doc(client.id).set(client).catch(function () { });
     });
   }
   renderDashboard();
@@ -996,7 +996,7 @@ function initFirebaseSync() {
       } else if (clients.length > 0 && !snapshot.metadata.fromCache) {
         // Initial migration: upload existing local clients to Firestore!
         clients.forEach(function (c) {
-          db.collection('clients').doc(c.id).set(c).catch(function () {});
+          db.collection('clients').doc(c.id).set(c).catch(function () { });
         });
       }
       updateCloudStatusBadge(true);
@@ -1017,7 +1017,7 @@ function initFirebaseSync() {
         }
       } else if (!doc.metadata.fromCache) {
         // Initial migration: upload settings to Firestore!
-        db.collection('settings').doc('config').set(settings).catch(function () {});
+        db.collection('settings').doc('config').set(settings).catch(function () { });
       }
     }, function (error) {
       console.warn('Firestore settings listener notice:', error.message);
@@ -1042,8 +1042,8 @@ function getAppPin() {
 }
 
 function isAppLocked() {
-  var isAuth = sessionStorage.getItem('ds_authenticated') === 'true';
-  var isRemembered = localStorage.getItem('ds_remember_device') === 'true';
+  var isAuth = sessionStorage.getItem('ds_auth_pin_2026') === 'true';
+  var isRemembered = localStorage.getItem('ds_remember_pin_2026') === 'true';
   return !isAuth && !isRemembered;
 }
 
@@ -1078,9 +1078,9 @@ function handleUnlock(event) {
   var targetPin = getAppPin();
 
   if (entered === targetPin) {
-    sessionStorage.setItem('ds_authenticated', 'true');
+    sessionStorage.setItem('ds_auth_pin_2026', 'true');
     if (remEl && remEl.checked) {
-      localStorage.setItem('ds_remember_device', 'true');
+      localStorage.setItem('ds_remember_pin_2026', 'true');
     }
 
     if (errEl) errEl.style.display = 'none';
@@ -1135,8 +1135,8 @@ function togglePinVisibility() {
 window.togglePinVisibility = togglePinVisibility;
 
 function lockAppNow() {
-  sessionStorage.removeItem('ds_authenticated');
-  localStorage.removeItem('ds_remember_device');
+  sessionStorage.removeItem('ds_auth_pin_2026');
+  localStorage.removeItem('ds_remember_pin_2026');
   var overlay = document.getElementById('appLockScreen');
   if (overlay) {
     overlay.style.display = 'flex';
@@ -1177,7 +1177,7 @@ function changeAppPin() {
   saveData();
 
   if (typeof isFirebaseReady !== 'undefined' && isFirebaseReady && db) {
-    db.collection('settings').doc('config').set(settings).catch(function () {});
+    db.collection('settings').doc('config').set(settings).catch(function () { });
   }
 
   if (curEl) curEl.value = '';
