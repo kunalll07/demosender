@@ -1508,3 +1508,225 @@ body {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.45; transform: scale(0.85); }
 }
+
+
+/* ===== APP LOCK SCREEN STYLING ===== */
+.app-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.lock-card {
+  background: #0b1120;
+  border: 1.5px solid #1e293b;
+  border-radius: 20px;
+  padding: 30px 24px 26px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 230, 118, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.lock-card.shake {
+  animation: lockShake 0.35s ease;
+}
+
+@keyframes lockShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.lock-brand {
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.lock-logo {
+  height: 38px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.lock-icon-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 230, 118, 0.12);
+  color: #00e676;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  border: 1px solid rgba(0, 230, 118, 0.25);
+}
+
+.lock-icon-wrap svg {
+  width: 24px;
+  height: 24px;
+}
+
+.lock-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.lock-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 22px;
+}
+
+.pin-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pin-input {
+  width: 100%;
+  height: 50px;
+  background: #1e293b;
+  border: 1.5px solid #334155;
+  border-radius: 12px;
+  padding: 0 46px 0 16px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 8px;
+  text-align: center;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.pin-input:focus {
+  border-color: #00e676;
+  background: #0f172a;
+  box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.2);
+}
+
+.pin-eye-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.pin-eye-btn:hover {
+  color: #ffffff;
+}
+
+.pin-eye-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.lock-error-msg {
+  color: #ef4444;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.btn-unlock-main {
+  width: 100%;
+  height: 48px;
+  background: #00e676;
+  color: #000000;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 230, 118, 0.35);
+  transition: all 0.15s ease;
+}
+
+.btn-unlock-main:hover {
+  background: #00c853;
+  transform: translateY(-1px);
+}
+
+.btn-unlock-main:active {
+  transform: translateY(0);
+}
+
+.btn-unlock-main svg {
+  width: 18px;
+  height: 18px;
+}
+
+.lock-remember-row {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.remember-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.remember-label input {
+  accent-color: #00e676;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+}
+
+.btn-lock-now {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-lock-now:hover {
+  opacity: 0.9;
+}
+
+.drawer-lock-link {
+  color: #ef4444 !important;
+}
+
+.drawer-lock-link:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+}

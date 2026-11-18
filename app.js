@@ -44,6 +44,7 @@ var DEFAULT_PRODUCTS = [
 
 var DEFAULT_SETTINGS = {
   companyName: 'DemoSender',
+  appPin: '2026',
   introMsg: 'Hello! We are from {company}. We are sharing an exclusive demo just for you!',
   products: DEFAULT_PRODUCTS
 };
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
   renderSettings();
   updateCountryFlag();
   initFirebaseSync();
+  checkAppLock();
 
   // Instant real-time search event listeners
   var searchInput = document.getElementById('dashSearch');
@@ -1019,3 +1021,161 @@ function initFirebaseSync() {
   }
 }
 window.initFirebaseSync = initFirebaseSync;
+
+
+// ===================================================
+//  Security App Lock & PIN System (Default: 2026)
+// ===================================================
+
+function getAppPin() {
+  if (settings && settings.appPin) {
+    return String(settings.appPin).trim();
+  }
+  return '2026';
+}
+
+function isAppLocked() {
+  var isAuth = sessionStorage.getItem('ds_authenticated') === 'true';
+  var isRemembered = localStorage.getItem('ds_remember_device') === 'true';
+  return !isAuth && !isRemembered;
+}
+
+function checkAppLock() {
+  var overlay = document.getElementById('appLockScreen');
+  if (!overlay) return;
+
+  if (isAppLocked()) {
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    var pinEl = document.getElementById('pinInput');
+    if (pinEl) {
+      pinEl.value = '';
+      setTimeout(function () { pinEl.focus(); }, 150);
+    }
+  } else {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+window.checkAppLock = checkAppLock;
+
+function handleUnlock(event) {
+  if (event) event.preventDefault();
+
+  var pinEl = document.getElementById('pinInput');
+  var errEl = document.getElementById('lockError');
+  var remEl = document.getElementById('rememberDevice');
+  var cardEl = document.querySelector('.lock-card');
+
+  var entered = pinEl ? pinEl.value.trim() : '';
+  var targetPin = getAppPin();
+
+  if (entered === targetPin) {
+    sessionStorage.setItem('ds_authenticated', 'true');
+    if (remEl && remEl.checked) {
+      localStorage.setItem('ds_remember_device', 'true');
+    }
+
+    if (errEl) errEl.style.display = 'none';
+
+    var overlay = document.getElementById('appLockScreen');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity 0.25s ease';
+      setTimeout(function () {
+        overlay.style.display = 'none';
+        overlay.style.opacity = '1';
+        document.body.style.overflow = '';
+      }, 250);
+    }
+
+    showToast('🔓 Welcome to DemoSender!');
+  } else {
+    if (errEl) {
+      errEl.textContent = '❌ Incorrect PIN. Please try again.';
+      errEl.style.display = 'block';
+    }
+    if (cardEl) {
+      cardEl.classList.remove('shake');
+      void cardEl.offsetWidth; // trigger reflow
+      cardEl.classList.add('shake');
+    }
+    if (pinEl) {
+      pinEl.value = '';
+      pinEl.focus();
+    }
+  }
+  return false;
+}
+window.handleUnlock = handleUnlock;
+
+function togglePinVisibility() {
+  var pinEl = document.getElementById('pinInput');
+  var eyeSvg = document.getElementById('eyeIcon');
+  if (!pinEl) return;
+
+  var isPass = pinEl.type === 'password';
+  pinEl.type = isPass ? 'text' : 'password';
+
+  if (eyeSvg) {
+    if (isPass) {
+      eyeSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+    } else {
+      eyeSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+    }
+  }
+}
+window.togglePinVisibility = togglePinVisibility;
+
+function lockAppNow() {
+  sessionStorage.removeItem('ds_authenticated');
+  localStorage.removeItem('ds_remember_device');
+  var overlay = document.getElementById('appLockScreen');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  var pinEl = document.getElementById('pinInput');
+  var errEl = document.getElementById('lockError');
+  if (errEl) errEl.style.display = 'none';
+  if (pinEl) {
+    pinEl.value = '';
+    pinEl.focus();
+  }
+  showToast('🔒 App locked');
+}
+window.lockAppNow = lockAppNow;
+
+function changeAppPin() {
+  var curEl = document.getElementById('currentPinInput');
+  var newEl = document.getElementById('newPinInput');
+
+  var cur = curEl ? curEl.value.trim() : '';
+  var nxt = newEl ? newEl.value.trim() : '';
+  var actualCur = getAppPin();
+
+  if (cur !== actualCur) {
+    showToast('⚠️ Current PIN is incorrect!');
+    if (curEl) curEl.focus();
+    return;
+  }
+
+  if (!nxt || nxt.length < 4) {
+    showToast('⚠️ New PIN must be at least 4 digits/characters!');
+    if (newEl) newEl.focus();
+    return;
+  }
+
+  settings.appPin = nxt;
+  saveData();
+
+  if (typeof isFirebaseReady !== 'undefined' && isFirebaseReady && db) {
+    db.collection('settings').doc('config').set(settings).catch(function () {});
+  }
+
+  if (curEl) curEl.value = '';
+  if (newEl) newEl.value = '';
+
+  showToast('✅ Security PIN updated to: ' + nxt);
+}
+window.changeAppPin = changeAppPin;
